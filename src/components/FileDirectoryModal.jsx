@@ -31,11 +31,11 @@ const FileDirectoryModal = ({
     }
   };
 
-  const handleCheckboxChange = (fileURL) => {
+  const handleCheckboxChange = (file) => {
     const updatedSelection = [...selectedFiles];
-    const index = updatedSelection.indexOf(fileURL);
+    const index = updatedSelection.indexOf(file);
     if (index === -1) {
-      updatedSelection.push(fileURL);
+      updatedSelection.push(file);
     } else {
       updatedSelection.splice(index, 1);
     }
@@ -95,8 +95,8 @@ const FileDirectoryModal = ({
                         type="checkbox"
                         id={`fileCheckbox-${file.id}`}
                         label={file.fileName}
-                        checked={selectedFiles.includes(file.fileURL)}
-                        onChange={() => handleCheckboxChange(file.fileURL)}
+                        checked={selectedFiles.includes(file)}
+                        onChange={() => handleCheckboxChange(file)}
                       />
                     </>
                   )}

@@ -372,7 +372,7 @@ const Outgoing = () => {
             selectedFilesCompose.length >= 1
               ? "Files from directory"
               : file.name || "N/A",
-          status: documentState,
+          status: selectedFilesCompose.length >= 1 ? "Pending" : documentState,
           createdAt: serverTimestamp(),
           isSendToALl: props.currentUser.uid === reciever,
         };

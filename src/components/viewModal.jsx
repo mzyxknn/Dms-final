@@ -22,25 +22,27 @@ import { toast } from "react-toastify";
 import moment from "moment";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
-
-
 function ViewFile(props) {
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => {
     // Extract the file extension
-    const cleanedFileUrl = props.file.split('?')[0];
+    const cleanedFileUrl = props.file.split("?")[0];
 
     // Extract the file extension
-    const fileExtension = cleanedFileUrl.split('.').pop();
+    const fileExtension = cleanedFileUrl.split(".").pop();
 
-    console.log('File URL:', fileExtension);
+    console.log("File URL:", fileExtension);
 
-    if (fileExtension.toLowerCase() !== 'pdf') {
+    if (fileExtension.toLowerCase() !== "pdf") {
       // If the file is not a PDF, show a toast message and return
       handleDownload();
-      toast.info('File type: '+ fileExtension + ' not available for viewing. Download initiated.');
+      toast.info(
+        "File type: " +
+          fileExtension +
+          " not available for viewing. Download initiated."
+      );
       return;
     }
 
@@ -50,7 +52,7 @@ function ViewFile(props) {
   const handleDownload = () => {
     // You can customize the download behavior here
     // Example: Triggering download using an invisible link
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = props.file;
     link.download = props.file; // You can set the desired file name
     document.body.appendChild(link);
@@ -598,19 +600,37 @@ function ViewModal(props) {
               </h5>
             </div>
             <div className="row mt-3">
-              {currentMessage.status !== "In Progress" && (
-                <div className="col-12">
-                  <div className="form-wrapper flex">
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={currentMessage.fileName}
-                    />
+              {currentMessage.fileName == "Files from directory" &&
+                JSON.parse(currentMessage.fileUrl).map((file) => {
+                  return (
+                    <div className="col-12 my-2">
+                      <div className="form-wrapper flex">
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={file.fileName}
+                        />
 
-                    <ViewFile file={currentMessage.fileUrl} />
+                        <ViewFile file={file.fileURL} />
+                      </div>
+                    </div>
+                  );
+                })}
+
+              {currentMessage.status !== "In Progress" &&
+                currentMessage.fileName !== "Files from directory" && (
+                  <div className="col-12">
+                    <div className="form-wrapper flex">
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={currentMessage.fileName}
+                      />
+
+                      <ViewFile file={currentMessage.fileUrl} />
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {currentMessage.status == "In Progress" &&
                 auth.currentUser.uid == currentMessage.sender && (
@@ -716,6 +736,7 @@ function ViewModal(props) {
                 <textarea
                   rows={3}
                   value={reason}
+                  disabled
                   type="text"
                   placeholder="You reason goes here..."
                   className="form-control bg-danger my-3 text-white"

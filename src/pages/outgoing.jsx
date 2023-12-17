@@ -349,6 +349,12 @@ const Outgoing = () => {
         documentState = "In Progress";
       }
 
+      let output = "";
+      selectedFilesCompose.map((file) => {
+        output += file.fileName + " ,";
+      });
+
+      const fileTitle = output.substring(0, 20) + "....";
       try {
         const dataObject = {
           code: code || null,
@@ -370,12 +376,11 @@ const Outgoing = () => {
               ? JSON.stringify(selectedFilesCompose)
               : fileUrl || "N/A",
           fileName:
-            selectedFilesCompose.length >= 1
-              ? "Files from directory"
-              : file.name || "N/A",
+            selectedFilesCompose.length >= 1 ? fileTitle : file.name || "N/A",
           status: selectedFilesCompose.length >= 1 ? "Pending" : documentState,
           createdAt: serverTimestamp(),
           isSendToALl: props.currentUser.uid === reciever,
+          filesFromDirectory: selectedFilesCompose.length >= 1,
         };
 
         if (currentPage == "internal") {

@@ -373,7 +373,7 @@ function ViewModal(props) {
             await setDoc(folderDoc, folderData);
           }
 
-          if ((currentMessage.fileName = "Files from directory")) {
+          if (currentMessage.filesFromDirectory) {
             JSON.parse(currentMessage.fileUrl).map((file) => {
               addDoc(
                 collection(
@@ -627,7 +627,7 @@ function ViewModal(props) {
               </h5>
             </div>
             <div className="row mt-3">
-              {currentMessage.fileName == "Files from directory" &&
+              {currentMessage.filesFromDirectory &&
                 JSON.parse(currentMessage.fileUrl).map((file, index) => {
                   return (
                     <div key={index} className="col-12 my-2">
@@ -645,7 +645,7 @@ function ViewModal(props) {
                 })}
 
               {currentMessage.status !== "In Progress" &&
-                currentMessage.fileName !== "Files from directory" && (
+                !currentMessage.filesFromDirectory && (
                   <div className="col-12">
                     <div className="form-wrapper flex">
                       <input

@@ -261,6 +261,13 @@ const LayoutUser = ({ children }) => {
                 +63{user.phone ? user.phone : "Not Specified"}
               </h6>
             </div>
+            <div
+              className="bg-secondary p-2 px-4 w-100 my-2"
+              style={{ borderRadius: 15 }}
+            >
+              <p className="mb-0">Office Name</p>
+              <h6 className="mb-0">{getOffice(user.office).officeName}</h6>
+            </div>
           </Modal.Body>
           <Modal.Footer>
             <Button onClick={() => setEditProfile(true)}>Edit Profile</Button>

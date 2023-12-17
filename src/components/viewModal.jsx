@@ -372,16 +372,36 @@ function ViewModal(props) {
           await setDoc(folderDoc, folderData);
         }
 
-        addDoc(
-          collection(db, "storage", auth.currentUser.uid, office.officeName),
-          {
-            fileName: currentMessage.fileName,
-            fileURL: currentMessage.fileUrl,
-            owner: auth.currentUser.uid,
-            isFolder: false,
-            createdAt: serverTimestamp(),
-          }
-        );
+        if ((currentMessage.fileName = "Files from directory")) {
+          JSON.parse(currentMessage.fileUrl).map((file) => {
+            addDoc(
+              collection(
+                db,
+                "storage",
+                auth.currentUser.uid,
+                office.officeName
+              ),
+              {
+                fileName: file.fileName,
+                fileURL: file.fileURL,
+                owner: auth.currentUser.uid,
+                isFolder: false,
+                createdAt: serverTimestamp(),
+              }
+            );
+          });
+        } else {
+          addDoc(
+            collection(db, "storage", auth.currentUser.uid, office.officeName),
+            {
+              fileName: currentMessage.fileName,
+              fileURL: currentMessage.fileUrl,
+              owner: auth.currentUser.uid,
+              isFolder: false,
+              createdAt: serverTimestamp(),
+            }
+          );
+        }
       }
       toast.success(`Successfully ${type}`);
     } catch (error) {
@@ -601,9 +621,9 @@ function ViewModal(props) {
             </div>
             <div className="row mt-3">
               {currentMessage.fileName == "Files from directory" &&
-                JSON.parse(currentMessage.fileUrl).map((file) => {
+                JSON.parse(currentMessage.fileUrl).map((file, index) => {
                   return (
-                    <div className="col-12 my-2">
+                    <div key={index} className="col-12 my-2">
                       <div className="form-wrapper flex">
                         <input
                           type="text"

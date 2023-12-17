@@ -30,6 +30,7 @@ import {
 import { auth, db, storage } from "../../firebase";
 import BounceLoader from "react-spinners/BounceLoader";
 import Dropdown from "react-bootstrap/Dropdown";
+
 import { useEffect, useRef, useState } from "react";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { toast } from "react-toastify";
@@ -45,10 +46,17 @@ import emailjs from "emailjs-com";
 import { InputGroup } from "react-bootstrap";
 import Datetime from "react-datetime";
 import "react-datetime/css/react-datetime.css";
+
+import { BarLoader } from "react-spinners";
+
+import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
+import FileDirectoryModal from "../../src/components/FileDirectoryModal"; // Import the FileDirectoryModal component
+
 const userCollectionRef = collection(db, "users");
 const messagesCollectionRef = collection(db, "messages");
 const outgoingExternal = collection(db, "outgoing-external");
 const officeCollection = collection(db, "offices");
+
 const UserOutgoing = () => {
   const [modalShow, setModalShow] = useState(false);
   const [users, setUsers] = useState([]);
@@ -67,7 +75,23 @@ const UserOutgoing = () => {
   const [classificationData, setClassificationData] = useState([]);
   const [subClassificationData, setSubClassificationData] = useState([]);
   const [actionData, setActionData] = useState([]);
+
+  const [showModal, setShowModal] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [currentClassification, setCurrentClassification] = useState("");
+
+  const handleOpenModal = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  const handleSelectFile = (files) => {
+    setSelectedFiles(files);
+    handleCloseModal();
+  };
 
   const sortData = () => {
     const sortedData = [...messages].sort((a, b) => {
@@ -102,6 +126,7 @@ const UserOutgoing = () => {
     });
     return office[0] == undefined ? "Unknown" : office[0].status;
   };
+
   function DeleteModal() {
     const handleDelete = () => {
       const docMessage = doc(db, "messages", currentMessage.id);
@@ -127,6 +152,7 @@ const UserOutgoing = () => {
       </>
     );
   }
+
   function ComposeModal(props) {
     const [code, setCode] = useState("");
     const [reciever, setReciever] = useState("");
@@ -145,6 +171,27 @@ const UserOutgoing = () => {
     const [show, setShow] = useState(false);
     const [multipe, setMultiple] = useState(false);
     const [selectedUsers, setSelectedUsers] = useState([]);
+
+    // New state to track selected files
+    const [selectedFilesCompose, setSelectedFilesCompose] = useState([]);
+
+    // Function to handle file selection without resetting other data
+    const handleSelectFileCompose = (selectedFile) => {
+      setSelectedFilesCompose(selectedFile);
+    };
+
+    const [showDirectoryModal, setShowDirectoryModal] = useState(false);
+
+    // Function to open the file directory modal
+    const handleOpenDirectoryModal = () => {
+      setShowDirectoryModal(true);
+    };
+
+    // Function to close the file directory modal
+    const handleCloseDirectoryModal = () => {
+      setShowDirectoryModal(false);
+    };
+
     const generateRandomCode = () => {
       const min = 1000;
       const max = 99999;
@@ -184,8 +231,6 @@ const UserOutgoing = () => {
         } else {
           return false;
         }
-        // Skip validation when multipe is true
-        return true;
       }
     };
 
@@ -319,15 +364,22 @@ const UserOutgoing = () => {
           deliverType: deliverType || null,
           documentFlow: currentPage == "internal" ? "Internal" : "External",
           attachmentDetail: attachmentDetail || null,
-          fileUrl: fileUrl || "N/A",
-          fileName: file.name || "N/A",
-          status: documentState,
+          fileUrl:
+            selectedFilesCompose.length >= 1
+              ? JSON.stringify(selectedFilesCompose)
+              : fileUrl || "N/A",
+          fileName:
+            selectedFilesCompose.length >= 1
+              ? "Files from directory"
+              : file.name || "N/A",
+          status: selectedFilesCompose.length >= 1 ? "Pending" : documentState,
           createdAt: serverTimestamp(),
           isSendToALl: props.currentUser.uid === reciever,
         };
 
         if (currentPage == "internal") {
           if (!multipe) {
+            setModalShow(false);
             addDoc(messagesCollectionRef, dataObject).then((document) => {
               const isAll = props.currentUser.uid == reciever;
               if (!isAll) {
@@ -337,8 +389,8 @@ const UserOutgoing = () => {
                   status: "Created",
                 });
                 toast.success("Your message is succesfully sent!");
-                setModalShow(false);
               } else {
+                setModalShow(false);
                 const docRef = doc(
                   db,
                   "routing",
@@ -352,14 +404,14 @@ const UserOutgoing = () => {
                   status: "Created",
                   user: getUser(auth.currentUser.uid).fullName,
                 });
-                setModalShow(false);
               }
             });
           } else {
+            setModalShow(false);
+
             selectedUsers.map((user) => {
               const dataObjectCopy = { ...dataObject };
               dataObjectCopy["reciever"] = user.id;
-
               addDoc(messagesCollectionRef, dataObjectCopy).then((document) => {
                 addDoc(collection(db, "routing", document.id, document.id), {
                   createdAt: serverTimestamp(),
@@ -367,15 +419,14 @@ const UserOutgoing = () => {
                   status: "Created",
                 });
                 toast.success("Your message is succesfully sent!");
-                setModalShow(false);
               });
               sendEmail(fileUrl, user);
             });
           }
         } else {
+          setModalShow(false);
           addDoc(outgoingExternal, dataObject).then(() => {
             toast.success("Your message is succesfully sent!");
-            setModalShow(false);
           });
         }
       } catch (error) {
@@ -399,9 +450,8 @@ const UserOutgoing = () => {
     };
 
     const handleUpload = async () => {
-      setLoading(true);
       setShow(false);
-
+      setLoading(true);
       const generateRandomCode = () => {
         const min = 1000;
         const max = 99999;
@@ -447,12 +497,12 @@ const UserOutgoing = () => {
             createdAt: serverTimestamp(),
             isSendToAll: props.currentUser.uid === user.id,
           };
+          setModalShow(false);
 
           const documentRef = await addDoc(
             messagesCollectionRef,
             dataObjectCopy
           );
-          setShowModal(false);
           await addDoc(
             collection(db, "routing", documentRef.id, documentRef.id),
             {
@@ -518,6 +568,7 @@ const UserOutgoing = () => {
         }
       });
     };
+
     return (
       <Modal
         {...props}
@@ -539,6 +590,7 @@ const UserOutgoing = () => {
               <h5 className="text-white mx-3 p-2 my-3">Document Details</h5>
             </div>
             <Form.Label>Document Code</Form.Label>
+
             <Form.Group
               className="mb-3 flex"
               controlId="exampleForm.ControlInput1"
@@ -553,6 +605,7 @@ const UserOutgoing = () => {
               </Button>
             </Form.Group>
             <Form.Label>Sender</Form.Label>
+
             <Form.Control
               type="text"
               value={
@@ -583,6 +636,7 @@ const UserOutgoing = () => {
                 Multiple
               </ListGroup.Item>
             </ListGroup>
+
             {currentPage == "internal" && (
               <>
                 {!multipe ? (
@@ -684,13 +738,16 @@ const UserOutgoing = () => {
                   <option value="usual">Usual</option>
                 </Form.Select>
               </div>
+
               <div className="col-lg-6">
                 <Form.Label>Classification</Form.Label>
+
                 <Form.Select
                   onChange={(e) => setClassification(e.target.value)}
                   className="mb-3"
                 >
                   <option>Please select an option</option>
+
                   {classificationData.map((value) => {
                     return <option value={value.value}>{value.value}</option>;
                   })}
@@ -698,6 +755,7 @@ const UserOutgoing = () => {
               </div>
               <div className="col-lg-6">
                 <Form.Label>Sub Classification</Form.Label>
+
                 <Form.Select
                   onChange={(e) => setSubClassification(e.target.value)}
                   className="mb-3"
@@ -710,6 +768,7 @@ const UserOutgoing = () => {
               </div>
               <div className="col-lg-6">
                 <Form.Label>Action</Form.Label>
+
                 <Form.Select
                   onChange={(e) => setAction(e.target.value)}
                   className="mb-3"
@@ -730,6 +789,7 @@ const UserOutgoing = () => {
               </div>
               <div className="col-lg-6">
                 <Form.Label>Deliver Type</Form.Label>
+
                 <Form.Select
                   onChange={(e) => setDeliverType(e.target.value)}
                   className="mb-3"
@@ -766,12 +826,46 @@ const UserOutgoing = () => {
                 <Form.Control
                   onChange={(e) => setFile(e.target.files[0])}
                   type="file"
-                  accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  accept=".pdf,.docx"
                 />
               </Form.Group>
+              <Button onClick={handleOpenDirectoryModal}>
+                Choose from file directory
+              </Button>
+              {selectedFilesCompose.length > 0 && (
+                <div className="mt-2">
+                  Selected {selectedFilesCompose.length} files
+                </div>
+              )}
+
+              <Modal show={showModal} onHide={handleCloseModal}>
+                <Modal.Header closeButton>
+                  <Modal.Title>Select a File</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  {/* Your file selection UI goes here */}
+                  <Form.Control
+                    type="file"
+                    onChange={(e) => handleSelectFile(e.target.files[0])}
+                    accept=".pdf,.docx"
+                  />
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button variant="secondary" onClick={handleCloseModal}>
+                    Close
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => handleSelectFile(selectedFile)}
+                  >
+                    Select
+                  </Button>
+                </Modal.Footer>
+              </Modal>
             </Form.Group>
           </Modal.Body>
         )}
+
         <Modal.Footer>
           {!loading && (
             <Button
@@ -787,11 +881,18 @@ const UserOutgoing = () => {
               Send Document
             </Button>
           )}
+
           <ConfirmationModal />
+          <FileDirectoryModal
+            showModal={showDirectoryModal}
+            handleCloseModal={handleCloseDirectoryModal}
+            handleSelectFile={handleSelectFileCompose}
+          />
         </Modal.Footer>
       </Modal>
     );
   }
+
   function DropdownAction({ message }) {
     const downloadFIle = () => {
       const fileUrl = message.fileUrl;
@@ -803,6 +904,7 @@ const UserOutgoing = () => {
       link.click();
       document.body.removeChild(link);
     };
+
     const handleDelete = () => {
       setCurrentMessage(message);
       setDeleteModal(true);
@@ -813,11 +915,13 @@ const UserOutgoing = () => {
       //   toast.error(error.message);
       // }
     };
+
     return (
       <Dropdown>
         <Dropdown.Toggle variant="secondary" id="dropdown-basic">
           <img src="./assets/images/pepicons-pencil_dots-y.png" alt="" />
         </Dropdown.Toggle>
+
         <Dropdown.Menu>
           <Dropdown.Item
             onClick={() => {
@@ -845,6 +949,7 @@ const UserOutgoing = () => {
       </Dropdown>
     );
   }
+
   function DropdownActionExternal({ message }) {
     const downloadFIle = () => {
       const fileUrl = message.fileUrl;
@@ -856,15 +961,18 @@ const UserOutgoing = () => {
       link.click();
       document.body.removeChild(link);
     };
+
     const handleDelete = () => {
       const docRef = doc(db, "outgoing-external", message.id);
       deleteDoc(docRef).then(() => toast.success("Successfully Deleted!"));
     };
+
     return (
       <Dropdown>
         <Dropdown.Toggle variant="secondary" id="dropdown-basic">
           <img src="./assets/images/pepicons-pencil_dots-y.png" alt="" />
         </Dropdown.Toggle>
+
         <Dropdown.Menu>
           <Dropdown.Item
             onClick={() => {
@@ -880,6 +988,7 @@ const UserOutgoing = () => {
           <Dropdown.Item onClick={downloadFIle}>
             Download <FaDownload />
           </Dropdown.Item>
+
           {/* <Dropdown.Item
             onClick={() => {
               setCurrentMessage(message);
@@ -892,8 +1001,10 @@ const UserOutgoing = () => {
       </Dropdown>
     );
   }
+
   const fetchData = async () => {
     setLoading(true);
+
     onSnapshot(collection(db, "classification"), (snapshot) => {
       const output = [];
       snapshot.docs.forEach((doc) => {
@@ -915,7 +1026,9 @@ const UserOutgoing = () => {
       });
       setActionData(output);
     });
+
     //Offices
+
     onSnapshot(officeCollection, (snapshot) => {
       const offices = [];
       snapshot.docs.forEach((doc) => {
@@ -923,15 +1036,19 @@ const UserOutgoing = () => {
       });
       setOffices(offices);
     });
+
     getDoc(doc(db, "sms", "sms")).then((doc) => {
       setEnableSMS(doc.data().enable);
     });
+
     const snapshot = await getDocs(userCollectionRef);
     const output = snapshot.docs.map((doc) => {
       return { id: doc.id, ...doc.data() };
     });
+
     setUsers(output);
     const q = query(messagesCollectionRef, orderBy("createdAt", "desc"));
+
     onSnapshot(
       q,
       (querySnapshot) => {
@@ -948,6 +1065,7 @@ const UserOutgoing = () => {
         console.error("Error listening to collection:", error);
       }
     );
+
     const q2 = query(outgoingExternal, orderBy("createdAt", "desc"));
     onSnapshot(q2, (snapshot) => {
       const messages = [];
@@ -959,8 +1077,10 @@ const UserOutgoing = () => {
       });
       setExternalMessages(messages);
     });
+
     setLoading(false);
   };
+
   const getUser = (id) => {
     const user = users.filter((user) => {
       if (user.id === id) {
@@ -969,11 +1089,13 @@ const UserOutgoing = () => {
     });
     return user[0] ? user[0] : { fullName: "Deleted User" };
   };
+
   function toTitleCase(str) {
     return str.replace(/\w\S*/g, function (txt) {
       return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     });
   }
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -991,6 +1113,7 @@ const UserOutgoing = () => {
       return message;
     }
   });
+
   const filteredExternalMessages = externalMessages.filter((message) => {
     const sender = getUser(message.sender);
     if (
@@ -1021,6 +1144,7 @@ const UserOutgoing = () => {
       }
     }
   );
+
   return (
     <LayoutUser>
       {currentMessage && (
@@ -1032,6 +1156,7 @@ const UserOutgoing = () => {
           name={"end"}
         />
       )}
+
       {currentMessage && (
         <ViewModal
           getUser={getUser}
@@ -1043,6 +1168,7 @@ const UserOutgoing = () => {
           currentPage={currentPage}
         />
       )}
+
       {auth.currentUser && (
         <ComposeModal
           show={modalShow}
@@ -1050,11 +1176,19 @@ const UserOutgoing = () => {
           currentUser={auth.currentUser}
         />
       )}
+
       <DeleteModal />
+
+      <FileDirectoryModal
+        showModal={showModal}
+        handleCloseModal={handleCloseModal}
+        handleSelectFile={handleSelectFile}
+      />
+
       <div className="dashboard">
-        <div className="dashboard-content mx-3 mt-3">
-          <div className="row">
-            <div className="wrapper col-lg-8">
+        <div className="row">
+          <div className="col-lg-8">
+            <div className="wrapper">
               <h2 className="fw-bold my-3 mx-2">
                 Outgoing Documents
                 <FaInbox className="mx-2" />
@@ -1064,32 +1198,39 @@ const UserOutgoing = () => {
                 style={{ width: "200px", height: "10px", borderRadius: 20 }}
               ></div>
             </div>
-            {currentPage == "internal" && (
-              <div className="col-lg-4 flex justify-content-end">
-                <img
-                  style={{ width: "150px", cursor: "pointer" }}
-                  onClick={() => setModalShow(true)}
-                  className="mx-3"
-                  src="./assets/images/Group 8779.png"
-                  alt=""
-                />
-              </div>
-            )}
           </div>
+          <div className="col-lg-4 flex justify-content-end">
+            <img
+              style={{ width: "150px", cursor: "pointer" }}
+              onClick={() => setModalShow(true)}
+              className="mx-3"
+              src="./assets/images/Group 8779.png"
+              alt=""
+            />
+          </div>
+        </div>
+        <div className="dashboard-content mx-3 mt-3">
           <div className="row">
-            <div className="col-lg-5 flex justify-content-start">
+            <div className="col-lg-4 mx-2  flex display-flex">
               <ListGroup horizontal>
                 <ListGroup.Item
                   className={`${
                     currentPage == "internal" ? "bg-info text-white" : ""
                   } px-5 fw-bold`}
                   onClick={() => setCurrentPage("internal")}
-                  disabled
                 >
                   Internal
                 </ListGroup.Item>
+                <ListGroup.Item
+                  className={`${
+                    currentPage == "external" ? "bg-info text-white" : ""
+                  } px-5 fw-bold`}
+                  onClick={() => setCurrentPage("external")}
+                >
+                  External
+                </ListGroup.Item>
               </ListGroup>
-              <ListGroup className="col-lg-4 d-flex flex-column gap-2  m-0 p-0">
+              <ListGroup className="col-lg-6 p-0 m-0">
                 <ListGroup.Item style={{ border: "none" }}>
                   <Form.Select
                     aria-label="Default select example"
@@ -1108,7 +1249,7 @@ const UserOutgoing = () => {
               </ListGroup>
             </div>
 
-            <div className="flex col-lg-2 justify-content-start">
+            <div className="flex display-flex  col-2">
               <Button
                 className="mx-0 mx-3 my-3"
                 onClick={() => {
@@ -1122,7 +1263,7 @@ const UserOutgoing = () => {
                 Sort {sort}
               </Button>
             </div>
-            <div className="flex justify-content-end col">
+            <div className="flex justify-content-end col ">
               <div className="search flex w-100 ms-auto">
                 <input
                   onChange={(e) => setSearch(e.target.value)}
@@ -1135,6 +1276,7 @@ const UserOutgoing = () => {
             </div>
           </div>
           {loading && <PlaceHolder />}
+
           {currentPage == "internal" ? (
             <Table responsive="md" bordered hover variant="white">
               <thead>
@@ -1142,18 +1284,18 @@ const UserOutgoing = () => {
                   <th>DocID</th>
                   <th>Subject</th>
                   <th>File Name</th>
-                  <th>Reciever</th>
+                  <th>Receiver</th>
                   <th>Required Action</th>
-                  <th>Date</th>
+                  <th>Date </th>
                   <th>Prioritization</th>
                   <th>Status</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody>
-                {classificationFilteredInternal.map((message, index) => {
+                {classificationFilteredInternal.map((message) => {
                   return (
-                    <tr key={index}>
+                    <tr key={message.code}>
                       <td>
                         <div className="flex">
                           <FaFile />
@@ -1186,6 +1328,7 @@ const UserOutgoing = () => {
                         )}
                       </td>
                       <td>{message.action}</td>
+
                       {message.date && (
                         <td>{moment(message.date.toDate()).format("LLL")}</td>
                       )}
@@ -1279,7 +1422,7 @@ const UserOutgoing = () => {
                             {message.fileName}
                           </div>
                         </td>{" "}
-                        <td>{message.reciever} -</td>
+                        <td>{message.reciever}</td>
                         <td>{message.action}</td>
                         {message.date && (
                           <td>{moment(message.date.toDate()).format("LLL")}</td>
@@ -1340,4 +1483,5 @@ const UserOutgoing = () => {
     </LayoutUser>
   );
 };
+
 export default UserOutgoing;

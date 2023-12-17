@@ -733,7 +733,7 @@ const Outgoing = () => {
               />
             </Form.Group>
             <div className="row">
-              <div className="col-lg-6">
+              <div className="col-12">
                 <Form.Label>Prioritization</Form.Label>
                 <Form.Select
                   onChange={(e) => setPrioritization(e.target.value)}
@@ -745,7 +745,7 @@ const Outgoing = () => {
                 </Form.Select>
               </div>
 
-              <div className="col-lg-6">
+              <div className="col-12">
                 <Form.Label>Classification</Form.Label>
 
                 <Form.Select
@@ -759,7 +759,7 @@ const Outgoing = () => {
                   })}
                 </Form.Select>
               </div>
-              <div className="col-lg-6">
+              <div className="col-12">
                 <Form.Label>Sub Classification</Form.Label>
 
                 <Form.Select
@@ -772,7 +772,7 @@ const Outgoing = () => {
                   })}
                 </Form.Select>
               </div>
-              <div className="col-lg-6">
+              <div className="col-12">
                 <Form.Label>Action</Form.Label>
 
                 <Form.Select
@@ -785,7 +785,7 @@ const Outgoing = () => {
                   })}
                 </Form.Select>
               </div>
-              <div className="col-lg-6">
+              <div className="col-12">
                 <Form.Label>Due Date (Optional)</Form.Label>
                 <Datetime
                   onChange={(e) => {
@@ -793,7 +793,7 @@ const Outgoing = () => {
                   }}
                 />
               </div>
-              <div className="col-lg-6">
+              <div className="col-12">
                 <Form.Label>Deliver Type</Form.Label>
 
                 <Form.Select
@@ -806,7 +806,7 @@ const Outgoing = () => {
                   <option value="Combination">Combination</option>
                 </Form.Select>
               </div>
-              <div className="col-lg-6">
+              <div className="col-12">
                 <Form.Label>Document Flow</Form.Label>
                 <Form.Control
                   type="text"

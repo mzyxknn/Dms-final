@@ -252,20 +252,20 @@ const Files = () => {
   const downloadFile = async (folder) => {
     const res = await getFolderData(folder);
     console.log(res);
-    // const zip = new JSZip();
-    // // Fetch files from URIs and add them to the zip
-    // const fetchAndAddToZip = async (uri, fileName) => {
-    //   const response = await fetch(uri);
-    //   const blob = await response.blob();
-    //   zip.file(fileName, blob);
-    // };
-    // const fetchPromises = res.map(({ fileURL, fileName }) =>
-    //   fetchAndAddToZip(fileURL, fileName)
-    // );
-    // await Promise.all(fetchPromises);
-    // // Generate the zip file
-    // const zipBlob = await zip.generateAsync({ type: "blob" });
-    // // Save the zip file
+    const zip = new JSZip();
+    // Fetch files from URIs and add them to the zip
+    const fetchAndAddToZip = async (uri, fileName) => {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      zip.file(fileName, blob);
+    };
+    const fetchPromises = res.map(({ fileURL, fileName }) =>
+      fetchAndAddToZip(fileURL, fileName)
+    );
+    await Promise.all(fetchPromises);
+    // Generate the zip file
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    // Save the zip file
   };
 
   function DropdownAction({ storage }) {

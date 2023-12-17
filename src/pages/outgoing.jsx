@@ -199,39 +199,29 @@ const Outgoing = () => {
       const code = Math.floor(Math.random() * (max - min + 1)) + min;
       setCode(code.toString());
     };
+
+    const generateRandomCodeForMultiple = () => {
+      const min = 1000;
+      const max = 99999;
+      const code = Math.floor(Math.random() * (max - min + 1)) + min;
+      return code.toString();
+    };
+
     const validateForm = () => {
-      if (!multipe) {
-        // Check for validation only when multipe is false
-        if (
-          code &&
-          (reciever || selectedUsers.length >= 1) &&
-          subject &&
-          prioritization &&
-          classification &&
-          subClassification &&
-          action &&
-          deliverType &&
-          attachmentDetail
-        ) {
-          return true;
-        } else {
-          return false;
-        }
+      if (
+        (code || multipe) &&
+        (reciever || selectedUsers.length >= 1) &&
+        subject &&
+        prioritization &&
+        classification &&
+        subClassification &&
+        action &&
+        deliverType &&
+        attachmentDetail
+      ) {
+        return true;
       } else {
-        if (
-          (reciever || selectedUsers.length >= 1) &&
-          subject &&
-          prioritization &&
-          classification &&
-          subClassification &&
-          action &&
-          deliverType &&
-          attachmentDetail
-        ) {
-          return true;
-        } else {
-          return false;
-        }
+        return false;
       }
     };
 
@@ -341,6 +331,7 @@ const Outgoing = () => {
     };
 
     const handleSubmit = (fileUrl) => {
+      console.log(fileUrl, selectedUsers);
       let documentState = "Pending";
       if (currentPage == "external") {
         documentState = "Received";
@@ -417,7 +408,9 @@ const Outgoing = () => {
 
             selectedUsers.map((user) => {
               const dataObjectCopy = { ...dataObject };
+              dataObjectCopy["code"] = generateRandomCodeForMultiple();
               dataObjectCopy["reciever"] = user.id;
+
               addDoc(messagesCollectionRef, dataObjectCopy).then((document) => {
                 addDoc(collection(db, "routing", document.id, document.id), {
                   createdAt: serverTimestamp(),
@@ -438,129 +431,32 @@ const Outgoing = () => {
       } catch (error) {
         toast.error(error.message);
       }
-      // console.log("Code:", code);
-      // console.log("Sender:", sender);
-      // console.log("Receiver:", reciever);
-      // console.log("Subject:", subject);
-      // console.log("Description:", description);
-      // console.log("Prioritization:", prioritization);
-      // console.log("Date:", date);
-      // console.log("Classification:", classification);
-      // console.log("Subclassification:", subClassification);
-      // console.log("Action:", action);
-      // console.log("Due Date:", dueDate);
-      // console.log("Deliver Type:", deliverType);
-      // console.log("Document Flow:", documentFlow);
-      // console.log("Attachment Detail:", attachmentDetail);
-      // console.log("File:", file);
     };
 
     const handleUpload = async () => {
-      setShow(false);
       setLoading(true);
-      const generateRandomCode = () => {
-        const min = 1000;
-        const max = 99999;
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-      };
-
-      const generateCodeForUser = () => {
-        return generateRandomCode().toString();
-      };
-
-      const uploadFile = async (file) => {
+      setShow(false);
+      if (file) {
         const storageRef = ref(storage, `uploads/${file.name}`);
-        try {
-          const snapshot = await uploadBytes(storageRef, file);
-          const fileUrl = await getDownloadURL(snapshot.ref);
-          return fileUrl;
-        } catch (error) {
-          console.error("Error uploading file:", error);
-          throw new Error("Error uploading file. Please try again.");
-        }
-      };
-
-      const handleDocumentForUser = async (user, fileUrl) => {
-        try {
-          const dataObjectCopy = {
-            code: generateCodeForUser(),
-            sender: props.currentUser.uid || null,
-            reciever: user.id,
-            subject,
-            description,
-            prioritization,
-            date: serverTimestamp(),
-            classification,
-            subClassification,
-            action,
-            dueDate,
-            deliverType,
-            documentFlow: currentPage === "internal" ? "Internal" : "External",
-            attachmentDetail,
-            fileUrl: fileUrl || "N/A",
-            fileName: file.name || "N/A",
-            status: "Pending",
-            createdAt: serverTimestamp(),
-            isSendToAll: props.currentUser.uid === user.id,
-          };
-          setModalShow(false);
-
-          const documentRef = await addDoc(
-            messagesCollectionRef,
-            dataObjectCopy
-          );
-          await addDoc(
-            collection(db, "routing", documentRef.id, documentRef.id),
-            {
-              createdAt: serverTimestamp(),
-              message: dataObjectCopy,
-              status: "Created",
-            }
-          );
-
-          toast.success(
-            `Your message is successfully sent to ${user.fullName}`
-          );
-          sendEmail(fileUrl, user);
-        } catch (error) {
-          console.error("Error handling document for user:", error);
-          toast.error(
-            `Error sending document to ${user.fullName}. Please try again.`
-          );
-        }
-      };
-
-      try {
-        if (file) {
-          const fileUrl = await uploadFile(file);
-
-          if (enableSMS && currentPage === "internal") {
-            if (!multipe) {
-              sendEmail(fileUrl);
-              handleSubmit(fileUrl);
-            } else {
-              // Handle multiple users
-              const promises = selectedUsers.map((user) => {
-                return handleDocumentForUser(user, fileUrl);
-              });
-
-              await Promise.all(promises);
-            }
-          } else {
-            // Continue with the existing logic for single user
-            handleSubmit(fileUrl);
-          }
-        } else {
-          // Continue with the existing logic for single user
-          handleSubmit();
-        }
-      } catch (error) {
-        console.error("Error handling upload:", error);
-        toast.error(
-          error.message || "Error sending document. Please try again."
-        );
-      } finally {
-        setLoading(false);
+        uploadBytes(storageRef, file).then((snapshot) => {
+          getDownloadURL(storageRef)
+            .then((url) => {
+              if (url) {
+                if (enableSMS && currentPage == "internal") {
+                  // handleSendSMS();
+                  if (!multipe) {
+                    sendEmail(url);
+                  }
+                }
+                handleSubmit(url);
+              }
+            })
+            .catch((error) => {
+              console.error("Error getting download URL:", error);
+            });
+        });
+      } else {
+        handleSubmit();
       }
     };
 
@@ -832,7 +728,6 @@ const Outgoing = () => {
                   className={!directoryMode ? "bg-primary" : ""}
                   onClick={() => {
                     setDirectoryMode(false);
-                    setSelectedUsers([]);
                   }}
                 >
                   Upload Files

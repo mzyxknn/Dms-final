@@ -146,7 +146,7 @@ const Dashboard = () => {
     sortData();
   }, [sort]);
 
- /*  function DropdownAction({ message }) {
+  /*  function DropdownAction({ message }) {
     const downloadFIle = () => {
       const fileUrl = message.fileUrl;
       const link = document.createElement("a");
@@ -182,14 +182,18 @@ const Dashboard = () => {
     setUser(snapshot.data());
   };
 
+  useEffect(() => {
+    getMessages();
+  }, [users]);
+
   const fetchData = async () => {
     setLoading(true);
-    const snapshot = await getDocs(userCollectionRef);
-    const output = snapshot.docs.map((doc) => {
-      return { id: doc.id, ...doc.data() };
+    onSnapshot(userCollectionRef, (snapshot) => {
+      const output = snapshot.docs.map((doc) => {
+        return { id: doc.id, ...doc.data() };
+      });
+      setUsers(output);
     });
-
-    setUsers(output);
 
     // getDoc(doc(db, "sms", "sms")).then((doc) => {
     //   console.log(doc.data());
@@ -203,39 +207,6 @@ const Dashboard = () => {
       setClassificationData(output);
     });
 
-    const q = query(messagesCollectionRef, orderBy("createdAt", "desc"));
-
-    onSnapshot(
-      q,
-      (querySnapshot) => {
-        const messages = [];
-        const urgents = [];
-        querySnapshot.forEach((doc) => {
-          const message = { ...doc.data(), id: doc.id };
-          if (
-            message.reciever == auth.currentUser.uid ||
-            message.sender == message.reciever
-          ) {
-            messages.push(message);
-            if (
-              message.prioritization == "urgent" &&
-              message.status == "Pending"
-            ) {
-              urgents.push(message);
-            }
-          }
-        });
-        
-        setUrgentFiles(urgents);
-        setMessages(messages);
-        if (urgents.length >= 1) {
-          setUrgent(true);
-        }
-      },
-      (error) => {
-        console.error("Error listening to collection:", error);
-      }
-    );
     onSnapshot(collection(db, "offices"), (snapshot) => {
       const output = [];
       snapshot.docs.forEach((doc) => {
@@ -248,6 +219,44 @@ const Dashboard = () => {
     });
 
     setLoading(false);
+  };
+
+  const getMessages = () => {
+    const q = query(messagesCollectionRef, orderBy("createdAt", "desc"));
+
+    if (users.length >= 1) {
+      onSnapshot(
+        q,
+        (querySnapshot) => {
+          const messages = [];
+          const urgents = [];
+          querySnapshot.forEach((doc) => {
+            const message = { ...doc.data(), id: doc.id };
+            const isAdminSender = getUserData(message.sender).role == "admin";
+            const isAdminReceiver =
+              getUserData(message.reciever).role == "admin";
+            if (isAdminSender || isAdminReceiver) {
+              messages.push(message);
+              if (
+                message.prioritization == "urgent" &&
+                message.status == "Pending"
+              ) {
+                urgents.push(message);
+              }
+            }
+          });
+
+          setUrgentFiles(urgents);
+          setMessages(messages);
+          if (urgents.length >= 1) {
+            setUrgent(true);
+          }
+        },
+        (error) => {
+          console.error("Error listening to collection:", error);
+        }
+      );
+    }
   };
 
   const getUserData = (id) => {
@@ -516,11 +525,11 @@ const Dashboard = () => {
                       </td>
                       <td>{message.subject}</td>
                       <td
-                       style={{ cursor: "pointer" }}
+                        style={{ cursor: "pointer" }}
                         onClick={() => {
                           setCurrentMessage(message);
                           setShowRouting(true);
-                        }} 
+                        }}
                       >
                         <div
                           /* style={{ textDecoration: "underline" }} */

@@ -182,7 +182,7 @@ const Outgoing = () => {
 
     const [showDirectoryModal, setShowDirectoryModal] = useState(false);
 
-  // Function to open the file directory modal
+    // Function to open the file directory modal
     const handleOpenDirectoryModal = () => {
       setShowDirectoryModal(true);
     };
@@ -364,8 +364,14 @@ const Outgoing = () => {
           deliverType: deliverType || null,
           documentFlow: currentPage == "internal" ? "Internal" : "External",
           attachmentDetail: attachmentDetail || null,
-          fileUrl: fileUrl || "N/A",
-          fileName: file.name || "N/A",
+          fileUrl:
+            selectedFilesCompose.length >= 1
+              ? JSON.stringify(selectedFilesCompose)
+              : fileUrl || "N/A",
+          fileName:
+            selectedFilesCompose.length >= 1
+              ? "Files from directory"
+              : file.name || "N/A",
           status: documentState,
           createdAt: serverTimestamp(),
           isSendToALl: props.currentUser.uid === reciever,
@@ -383,7 +389,6 @@ const Outgoing = () => {
                   status: "Created",
                 });
                 toast.success("Your message is succesfully sent!");
-                
               } else {
                 setModalShow(false);
                 const docRef = doc(
@@ -399,7 +404,6 @@ const Outgoing = () => {
                   status: "Created",
                   user: getUser(auth.currentUser.uid).fullName,
                 });
-                
               }
             });
           } else {
@@ -415,7 +419,6 @@ const Outgoing = () => {
                   status: "Created",
                 });
                 toast.success("Your message is succesfully sent!");
-                
               });
               sendEmail(fileUrl, user);
             });
@@ -424,7 +427,6 @@ const Outgoing = () => {
           setModalShow(false);
           addDoc(outgoingExternal, dataObject).then(() => {
             toast.success("Your message is succesfully sent!");
-            
           });
         }
       } catch (error) {
@@ -455,11 +457,11 @@ const Outgoing = () => {
         const max = 99999;
         return Math.floor(Math.random() * (max - min + 1)) + min;
       };
-    
+
       const generateCodeForUser = () => {
         return generateRandomCode().toString();
       };
-    
+
       const uploadFile = async (file) => {
         const storageRef = ref(storage, `uploads/${file.name}`);
         try {
@@ -471,7 +473,7 @@ const Outgoing = () => {
           throw new Error("Error uploading file. Please try again.");
         }
       };
-    
+
       const handleDocumentForUser = async (user, fileUrl) => {
         try {
           const dataObjectCopy = {
@@ -496,26 +498,36 @@ const Outgoing = () => {
             isSendToAll: props.currentUser.uid === user.id,
           };
           setModalShow(false);
-    
-          const documentRef = await addDoc(messagesCollectionRef, dataObjectCopy);
-          await addDoc(collection(db, "routing", documentRef.id, documentRef.id), {
-            createdAt: serverTimestamp(),
-            message: dataObjectCopy,
-            status: "Created",
-          });
-    
-          toast.success(`Your message is successfully sent to ${user.fullName}`);
+
+          const documentRef = await addDoc(
+            messagesCollectionRef,
+            dataObjectCopy
+          );
+          await addDoc(
+            collection(db, "routing", documentRef.id, documentRef.id),
+            {
+              createdAt: serverTimestamp(),
+              message: dataObjectCopy,
+              status: "Created",
+            }
+          );
+
+          toast.success(
+            `Your message is successfully sent to ${user.fullName}`
+          );
           sendEmail(fileUrl, user);
         } catch (error) {
           console.error("Error handling document for user:", error);
-          toast.error(`Error sending document to ${user.fullName}. Please try again.`);
+          toast.error(
+            `Error sending document to ${user.fullName}. Please try again.`
+          );
         }
       };
-    
+
       try {
         if (file) {
           const fileUrl = await uploadFile(file);
-    
+
           if (enableSMS && currentPage === "internal") {
             if (!multipe) {
               sendEmail(fileUrl);
@@ -525,7 +537,7 @@ const Outgoing = () => {
               const promises = selectedUsers.map((user) => {
                 return handleDocumentForUser(user, fileUrl);
               });
-    
+
               await Promise.all(promises);
             }
           } else {
@@ -538,7 +550,9 @@ const Outgoing = () => {
         }
       } catch (error) {
         console.error("Error handling upload:", error);
-        toast.error(error.message || "Error sending document. Please try again.");
+        toast.error(
+          error.message || "Error sending document. Please try again."
+        );
       } finally {
         setLoading(false);
       }
@@ -815,15 +829,14 @@ const Outgoing = () => {
                   accept=".pdf,.docx"
                 />
               </Form.Group>
-              <Button onClick={handleOpenDirectoryModal}>Choose from file directory</Button>
-              {selectedFiles.length > 0 && (
-                <div className="mt-2">Selected {selectedFiles.length} files</div>
+              <Button onClick={handleOpenDirectoryModal}>
+                Choose from file directory
+              </Button>
+              {selectedFilesCompose.length > 0 && (
+                <div className="mt-2">
+                  Selected {selectedFilesCompose.length} files
+                </div>
               )}
-              <FileDirectoryModal
-                showModal={showDirectoryModal}
-                handleCloseModal={handleCloseDirectoryModal}
-                handleSelectFile={handleSelectFileCompose}
-              />
 
               <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
@@ -831,13 +844,20 @@ const Outgoing = () => {
                 </Modal.Header>
                 <Modal.Body>
                   {/* Your file selection UI goes here */}
-                  <Form.Control type="file" onChange={(e) => handleSelectFile(e.target.files[0])} accept=".pdf,.docx" />
+                  <Form.Control
+                    type="file"
+                    onChange={(e) => handleSelectFile(e.target.files[0])}
+                    accept=".pdf,.docx"
+                  />
                 </Modal.Body>
                 <Modal.Footer>
                   <Button variant="secondary" onClick={handleCloseModal}>
                     Close
                   </Button>
-                  <Button variant="primary" onClick={() => handleSelectFile(selectedFile)}>
+                  <Button
+                    variant="primary"
+                    onClick={() => handleSelectFile(selectedFile)}
+                  >
                     Select
                   </Button>
                 </Modal.Footer>
@@ -863,6 +883,11 @@ const Outgoing = () => {
           )}
 
           <ConfirmationModal />
+          <FileDirectoryModal
+            showModal={showDirectoryModal}
+            handleCloseModal={handleCloseDirectoryModal}
+            handleSelectFile={handleSelectFileCompose}
+          />
         </Modal.Footer>
       </Modal>
     );
@@ -1109,14 +1134,16 @@ const Outgoing = () => {
       return message;
     }
   });
-  const classificationFilteredExternal = filteredExternalMessages.filter((message) => {
-    if (currentClassification == "") {
-      return message;
+  const classificationFilteredExternal = filteredExternalMessages.filter(
+    (message) => {
+      if (currentClassification == "") {
+        return message;
+      }
+      if (message.classification == currentClassification) {
+        return message;
+      }
     }
-    if (message.classification == currentClassification) {
-      return message;
-    }
-  });
+  );
 
   return (
     <Layout>

@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Button, Table, Form } from 'react-bootstrap';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { auth, db } from '../../firebase';
+import React, { useState, useEffect } from "react";
+import { Modal, Button, Table, Form } from "react-bootstrap";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { auth, db } from "../../firebase";
 import moment from "moment";
 
 // ... (previous imports)
 
-const FileDirectoryModal = ({ showModal, handleCloseModal, handleSelectFile }) => {
+const FileDirectoryModal = ({
+  showModal,
+  handleCloseModal,
+  handleSelectFile,
+}) => {
   const [fileData, setFileData] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [currentFolder, setCurrentFolder] = useState('files');
+  const [currentFolder, setCurrentFolder] = useState("files");
 
   useEffect(() => {
     fetchData(currentFolder);
@@ -17,24 +21,24 @@ const FileDirectoryModal = ({ showModal, handleCloseModal, handleSelectFile }) =
 
   const fetchData = async (folderName) => {
     if (auth.currentUser) {
-      const q = query(collection(db, 'storage', auth.currentUser.uid, folderName), orderBy('createdAt', 'desc'));
+      const q = query(
+        collection(db, "storage", auth.currentUser.uid, folderName),
+        orderBy("createdAt", "desc")
+      );
       const snapshot = await getDocs(q);
       const data = snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
       setFileData(data);
     }
   };
-  
 
-  const handleCheckboxChange = (fileId) => {
+  const handleCheckboxChange = (fileURL) => {
     const updatedSelection = [...selectedFiles];
-    const index = updatedSelection.indexOf(fileId);
-
+    const index = updatedSelection.indexOf(fileURL);
     if (index === -1) {
-      updatedSelection.push(fileId);
+      updatedSelection.push(fileURL);
     } else {
       updatedSelection.splice(index, 1);
     }
-
     setSelectedFiles(updatedSelection);
   };
 
@@ -44,10 +48,10 @@ const FileDirectoryModal = ({ showModal, handleCloseModal, handleSelectFile }) =
 
   const handleBackClick = () => {
     // Handle going back to the parent folder
-    const parts = currentFolder.split('/');
+    const parts = currentFolder.split("/");
     parts.pop(); // Remove the current folder
-    const parentFolder = parts.join('/');
-    setCurrentFolder(parentFolder || 'files'); // Ensure there's always a folder (default to 'files')
+    const parentFolder = parts.join("/");
+    setCurrentFolder(parentFolder || "files"); // Ensure there's always a folder (default to 'files')
   };
   const handleSelectFileLocal = () => {
     // Pass the selected files to the handler in ComposeModal
@@ -62,7 +66,7 @@ const FileDirectoryModal = ({ showModal, handleCloseModal, handleSelectFile }) =
         <Modal.Title>Select a File</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {currentFolder !== 'files' && (
+        {currentFolder !== "files" && (
           <Button variant="link" onClick={handleBackClick}>
             Back
           </Button>
@@ -79,7 +83,10 @@ const FileDirectoryModal = ({ showModal, handleCloseModal, handleSelectFile }) =
               <tr key={file.id}>
                 <td>
                   {file.isFolder ? (
-                    <Button variant="link" onClick={() => handleFolderClick(file.fileName)}>
+                    <Button
+                      variant="link"
+                      onClick={() => handleFolderClick(file.fileName)}
+                    >
                       {file.fileName}
                     </Button>
                   ) : (
@@ -88,16 +95,14 @@ const FileDirectoryModal = ({ showModal, handleCloseModal, handleSelectFile }) =
                         type="checkbox"
                         id={`fileCheckbox-${file.id}`}
                         label={file.fileName}
-                        checked={selectedFiles.includes(file.id)}
-                        onChange={() => handleCheckboxChange(file.id)}
+                        checked={selectedFiles.includes(file.fileURL)}
+                        onChange={() => handleCheckboxChange(file.fileURL)}
                       />
                     </>
                   )}
                 </td>
                 {file.createdAt && (
-                  <td>
-                    {moment(file.createdAt.toDate()).format('LLL')}
-                  </td>
+                  <td>{moment(file.createdAt.toDate()).format("LLL")}</td>
                 )}
               </tr>
             ))}

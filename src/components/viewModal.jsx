@@ -352,28 +352,46 @@ function ViewModal(props) {
         return;
       }
       if (type == "Received") {
-        const folderData = {
-          owner: auth.currentUser.uid,
-          isFolder: true,
-          fileName: office.officeName,
-          createdAt: serverTimestamp(),
-        };
+        if (currentMessage.fileName !== "N/A") {
+          const folderData = {
+            owner: auth.currentUser.uid,
+            isFolder: true,
+            fileName: office.officeName,
+            createdAt: serverTimestamp(),
+          };
 
-        const folderDoc = doc(
-          db,
-          "storage",
-          auth.currentUser.uid,
-          "files",
-          office.officeName
-        );
+          const folderDoc = doc(
+            db,
+            "storage",
+            auth.currentUser.uid,
+            "files",
+            office.officeName
+          );
 
-        const folderExist = await getDoc(folderDoc);
-        if (!folderExist.exists()) {
-          await setDoc(folderDoc, folderData);
-        }
+          const folderExist = await getDoc(folderDoc);
+          if (!folderExist.exists()) {
+            await setDoc(folderDoc, folderData);
+          }
 
-        if ((currentMessage.fileName = "Files from directory")) {
-          JSON.parse(currentMessage.fileUrl).map((file) => {
+          if ((currentMessage.fileName = "Files from directory")) {
+            JSON.parse(currentMessage.fileUrl).map((file) => {
+              addDoc(
+                collection(
+                  db,
+                  "storage",
+                  auth.currentUser.uid,
+                  office.officeName
+                ),
+                {
+                  fileName: file.fileName,
+                  fileURL: file.fileURL,
+                  owner: auth.currentUser.uid,
+                  isFolder: false,
+                  createdAt: serverTimestamp(),
+                }
+              );
+            });
+          } else {
             addDoc(
               collection(
                 db,
@@ -382,25 +400,14 @@ function ViewModal(props) {
                 office.officeName
               ),
               {
-                fileName: file.fileName,
-                fileURL: file.fileURL,
+                fileName: currentMessage.fileName,
+                fileURL: currentMessage.fileUrl,
                 owner: auth.currentUser.uid,
                 isFolder: false,
                 createdAt: serverTimestamp(),
               }
             );
-          });
-        } else {
-          addDoc(
-            collection(db, "storage", auth.currentUser.uid, office.officeName),
-            {
-              fileName: currentMessage.fileName,
-              fileURL: currentMessage.fileUrl,
-              owner: auth.currentUser.uid,
-              isFolder: false,
-              createdAt: serverTimestamp(),
-            }
-          );
+          }
         }
       }
       toast.success(`Successfully ${type}`);
@@ -951,7 +958,10 @@ function ViewModal(props) {
               </div>
               <div className="col-lg-6 flex">
                 <Button
-                  disabled={!isDisable && !sendAll}
+                  disabled={
+                    (!isDisable && !sendAll) ||
+                    currentMessage.status == "In Progress"
+                  }
                   onClick={() => {
                     setAction("Received");
                     setConfirmation(true);

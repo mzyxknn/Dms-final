@@ -303,7 +303,7 @@ const LayoutUser = ({ children }) => {
         return office;
       }
     });
-    return output[0];
+    return output[0] == undefined ? { officeName: "Loading..." } : output[0];
   };
 
   useEffect(() => {
@@ -359,7 +359,7 @@ const LayoutUser = ({ children }) => {
                 {user.fullName} - <b>User</b>
               </p>
             )}{" "}
-            {user && (
+            {user && getOffice && (
               <p className="mb-0">
                 Office: {getOffice(user.office).officeName}
               </p>

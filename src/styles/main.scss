@@ -1,0 +1,56 @@
+$theme-colors: (
+  "primary": #a1ca9d,
+  "secondary": #e9e9e9,
+  "dark": #000000,
+  "info": #3ef4b4,
+  "warning": #edff1c,
+  "danger": #a20000,
+  "success": #085a35,
+);
+
+$info-color: map-get($theme-colors, "info");
+
+@import "../../node_modules/bootstrap/scss/bootstrap.scss";
+
+.flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sidebar {
+  width: 100%;
+  transition: 0.5s;
+}
+
+.sidebar .navigation p {
+  font-size: 12px;
+}
+
+.sidebar.inactive {
+  margin-left: -270px;
+}
+
+.sidebar-content .navigation a {
+  color: black !important;
+  border-radius: 10px;
+}
+
+.sidebar-content .navigation a:hover {
+  background-color: $info-color;
+}
+.sidebar-content .navigation a.active {
+  background-color: $info-color;
+}
+.login-wrapper {
+  height: 100vh;
+  background-image: url(../../public/assets/images/bg.png),
+    linear-gradient(to bottom, rgba(13, 206, 170, 0.5), rgba(36, 163, 140, 0.8));
+}
+
+.login-content {
+  height: 400px;
+  width: 360px;
+  background-color: white;
+  border-radius: 10px;
+}

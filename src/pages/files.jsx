@@ -27,6 +27,8 @@ import { BarLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import moment from "moment";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
+import { saveAs } from "file-saver";
+import JSZip from "jszip";
 
 const Files = () => {
   const [storages, setStorages] = useState([]);
@@ -35,6 +37,7 @@ const Files = () => {
   const [offices, setOffices] = useState([]);
   const [view, setView] = useState("list");
   const [sort, setSort] = useState("a-z");
+  const [files, setFiles] = useState([]);
 
   const sortData = () => {
     const sortedData = [...storages].sort((a, b) => {
@@ -92,6 +95,22 @@ const Files = () => {
     });
   };
 
+  const getFolderData = (folderName) => {
+    const q = query(
+      collection(db, "storage", auth.currentUser.uid, folderName),
+      orderBy("createdAt", "desc")
+    );
+
+    return getDocs(q).then((snapshot) => {
+      const res = [];
+      snapshot.docs.forEach((doc) => {
+        const file = doc.data();
+        res.push(file);
+      });
+      return res;
+    });
+  };
+
   function AddFolder(props) {
     const [show, setShow] = useState(false);
     const [folders, setFolders] = useState();
@@ -138,28 +157,28 @@ const Files = () => {
   function AddFile(props) {
     const [show, setShow] = useState(false);
     const [files, setFiles] = useState([]);
-  
+
     const handleClose = () => {
       setShow(false);
       setFiles([]); // Clear selected files after closing the modal
     };
-  
+
     const handleShow = () => setShow(true);
-  
+
     const createFiles = async () => {
       console.log("Files:", files); // Log files before map
       setLoading(true);
-    
+
       try {
         // Ensure files is an array
         const filesArray = Array.isArray(files) ? files : [files];
-    
+
         if (filesArray.length > 0) {
           const uploadPromises = filesArray.map(async (file) => {
             const storageRef = ref(storage, `uploads/${file.name}`);
             await uploadBytes(storageRef, file);
             const url = await getDownloadURL(storageRef);
-    
+
             return {
               fileName: file.name,
               fileURL: url,
@@ -168,17 +187,24 @@ const Files = () => {
               createdAt: serverTimestamp(),
             };
           });
-    
+
           const results = await Promise.allSettled(uploadPromises);
-    
+
           const successfulUploads = results
-            .filter((result) => result.status === 'fulfilled')
+            .filter((result) => result.status === "fulfilled")
             .map((result) => result.value);
-    
+
           if (successfulUploads.length > 0) {
-            const docRef = collection(db, "storage", auth.currentUser.uid, currentFolder);
-            await Promise.all(successfulUploads.map((fileData) => addDoc(docRef, fileData)));
-    
+            const docRef = collection(
+              db,
+              "storage",
+              auth.currentUser.uid,
+              currentFolder
+            );
+            await Promise.all(
+              successfulUploads.map((fileData) => addDoc(docRef, fileData))
+            );
+
             handleClose();
             setLoading(false);
           } else {
@@ -195,8 +221,7 @@ const Files = () => {
         setLoading(false);
       }
     };
-    
-  
+
     return (
       <>
         <Button className="mx-3" variant="primary " onClick={handleShow}>
@@ -208,14 +233,14 @@ const Files = () => {
           </Modal.Header>
           <Modal.Body>
             <input
-               onChange={(e) => setFiles(Array.from(e.target.files))}
-               type="file"
-               className="form-control"
-               placeholder="Select Files"
-               multiple
+              onChange={(e) => setFiles(Array.from(e.target.files))}
+              type="file"
+              className="form-control"
+              placeholder="Select Files"
+              multiple
             />
           </Modal.Body>
-  
+
           <Modal.Footer>
             <Button onClick={createFiles}>Upload Files</Button>
           </Modal.Footer>
@@ -223,27 +248,39 @@ const Files = () => {
       </>
     );
   }
-  
 
-  const downloadFile = (file) => {
-    console.log(file);
-    const fileUrl = file;
-    const link = document.createElement("a");
-    link.href = fileUrl;
-    link.target = "_blank";
-    link.download = "downloaded_file";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const downloadFile = async (folder) => {
+    const res = await getFolderData(folder);
+
+    const zip = new JSZip();
+
+    // Fetch files from URIs and add them to the zip
+    const fetchAndAddToZip = async (uri, fileName) => {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      zip.file(fileName, blob);
+    };
+
+    const fetchPromises = res.map(({ fileURL, fileName }) =>
+      fetchAndAddToZip(fileURL, fileName)
+    );
+
+    await Promise.all(fetchPromises);
+
+    // Generate the zip file
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+
+    // Save the zip file
+    saveAs(zipBlob, "downloadedFiles.zip");
   };
 
   function DropdownAction({ storage }) {
     const [showModal, setShowModal] = useState(false);
-  
+
     const handleDelete = async () => {
       setShowModal(true);
     };
-  
+
     const handleConfirmDelete = async () => {
       // Perform deletion logic here
       if (currentFolder !== "files") {
@@ -269,26 +306,37 @@ const Files = () => {
           toast.success("Successfully Deleted!")
         );
       }
-  
+
       setShowModal(false);
     };
-  
+
     const handleCancelDelete = () => {
       setShowModal(false);
     };
-  
+
     return (
       <>
         <Dropdown>
-          <Dropdown.Toggle variant="secondary" id="dropdown-basic"></Dropdown.Toggle>
+          <Dropdown.Toggle
+            variant="secondary"
+            id="dropdown-basic"
+          ></Dropdown.Toggle>
           <Dropdown.Menu>
             <Dropdown.Item onClick={handleDelete}>Delete</Dropdown.Item>
-            <Dropdown.Item onClick={() => downloadFile(storage.fileURL)}>
+            <Dropdown.Item
+              onClick={async () => {
+                if (!storage.isFolder) {
+                  downloadFile(storage.fileURL);
+                } else {
+                  downloadFile(storage.fileName);
+                }
+              }}
+            >
               Download File
             </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
-  
+
         <Modal show={showModal} onHide={handleCancelDelete}>
           <Modal.Header closeButton>
             <Modal.Title>Confirm Deletion</Modal.Title>
@@ -317,6 +365,7 @@ const Files = () => {
 
   return (
     <Layout>
+      <div className="App"></div>
       <div className="files-wrapper">
         <div className="row">
           <div className="col-lg-6">
@@ -337,7 +386,6 @@ const Files = () => {
                 <AddFolder />
                 <AddFile />
               </div>
-
             </div>
             <ListGroup.Item style={{ border: "none" }}>
               <Button
@@ -362,14 +410,14 @@ const Files = () => {
             </Breadcrumb>
           </div>
         </div>
-  
+
         {loading && (
           <div className="flex flex-column">
             <h3>Uploading file...</h3>
             <BarLoader />
           </div>
         )}
-  
+
         <Table responsive="md" variant="white">
           <thead>
             <tr>
@@ -387,9 +435,9 @@ const Files = () => {
                     if (storage.isFolder) {
                       setCurrentFolder(storage.fileName);
                       fetchFolder(storage.fileName);
-                    } else if (storage.fileURL.toLowerCase().endsWith('.pdf')) {
+                    } else if (storage.fileURL.toLowerCase().endsWith(".pdf")) {
                       // Open PDF file in a viewer
-                      window.open(storage.fileURL, '_blank');
+                      window.open(storage.fileURL, "_blank");
                     } else {
                       // Handle other file types or actions
                       downloadFile(storage.fileURL);
@@ -399,9 +447,7 @@ const Files = () => {
                   {storage.fileName}
                 </td>
                 {storage.createdAt && (
-                  <td>
-                    {moment(storage.createdAt.toDate()).format("LLL")}
-                  </td>
+                  <td>{moment(storage.createdAt.toDate()).format("LLL")}</td>
                 )}
                 <td>
                   <DropdownAction storage={storage} />
@@ -413,7 +459,6 @@ const Files = () => {
       </div>
     </Layout>
   );
-  
 };
 
 export default Files;

@@ -822,7 +822,7 @@ const Outgoing = () => {
                 onChange={(e) => setAttachmentDetail(e.target.value)}
                 type="text"
               />
-              <ListGroup horizontal className="my-2">
+              <ListGroup horizontal className="my-4">
                 <ListGroup.Item
                   className={!directoryMode ? "bg-primary" : ""}
                   onClick={() => {
@@ -841,7 +841,7 @@ const Outgoing = () => {
                   Forward Files
                 </ListGroup.Item>
               </ListGroup>
-              {directoryMode ? (
+              {!directoryMode ? (
                 <Form.Group controlId="formFile" className="mb-3">
                   <Form.Label>Choose File</Form.Label>
                   <Form.Control

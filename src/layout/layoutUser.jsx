@@ -6,7 +6,7 @@ import { signOut } from "firebase/auth";
 import { auth, db, storage } from "../../firebase";
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import Form from "react-bootstrap/Form";
 
 import Button from "react-bootstrap/Button";
@@ -20,6 +20,7 @@ const LayoutUser = ({ children }) => {
   const [user, setUser] = useState(null);
   const [show, setShow] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [offices, setOffices] = useState([]);
 
   const getUser = async () => {
     const userRef = doc(db, "users", auth.currentUser.uid);
@@ -72,7 +73,7 @@ const LayoutUser = ({ children }) => {
           address: address,
           phone: phone,
           profile: profileLink || (user && user.profile) || null,
-          //profile: profileLink ? profileLink : user.profile, 
+          //profile: profileLink ? profileLink : user.profile,
         };
         const userDoc = doc(db, "users", props.user.id);
         setDoc(userDoc, data, { merge: true }).then((res) => {
@@ -296,7 +297,23 @@ const LayoutUser = ({ children }) => {
     });
   };
 
+  const getOffice = (id) => {
+    const output = offices.filter((office) => {
+      if (office.id == id) {
+        return office;
+      }
+    });
+    return output[0];
+  };
+
   useEffect(() => {
+    getDocs(collection(db, "offices")).then((res) => {
+      const offices = [];
+      res.docs.forEach((doc) => {
+        offices.push({ ...doc.data(), id: doc.id });
+      });
+      setOffices(offices);
+    });
     getUser();
   }, []);
 
@@ -342,6 +359,11 @@ const LayoutUser = ({ children }) => {
                 {user.fullName} - <b>User</b>
               </p>
             )}{" "}
+            {user && (
+              <p className="mb-0">
+                Office: {getOffice(user.office).officeName}
+              </p>
+            )}
             <Dropdown>
               <Dropdown.Toggle id="dropdown-basic"></Dropdown.Toggle>
 

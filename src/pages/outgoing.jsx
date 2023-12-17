@@ -838,7 +838,7 @@ const Outgoing = () => {
                     setDirectoryMode(true);
                   }}
                 >
-                  Forward Files
+                  Upload Local Files
                 </ListGroup.Item>
               </ListGroup>
               {!directoryMode ? (

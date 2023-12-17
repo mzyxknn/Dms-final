@@ -171,6 +171,7 @@ const UserOutgoing = () => {
     const [show, setShow] = useState(false);
     const [multipe, setMultiple] = useState(false);
     const [selectedUsers, setSelectedUsers] = useState([]);
+    const [directoryMode, setDirectoryMode] = useState(true);
 
     // New state to track selected files
     const [selectedFilesCompose, setSelectedFilesCompose] = useState([]);
@@ -817,25 +818,38 @@ const UserOutgoing = () => {
             </div>
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Attachment Details</Form.Label>
-              <Form.Control
-                onChange={(e) => setAttachmentDetail(e.target.value)}
-                type="text"
-              />
-              <Form.Group controlId="formFile" className="mb-3">
-                <Form.Label>Choose File</Form.Label>
-                <Form.Control
-                  onChange={(e) => setFile(e.target.files[0])}
-                  type="file"
-                  accept=".pdf,.docx"
-                />
-              </Form.Group>
-              <Button onClick={handleOpenDirectoryModal}>
-                Choose from file directory
-              </Button>
-              {selectedFilesCompose.length > 0 && (
-                <div className="mt-2">
-                  Selected {selectedFilesCompose.length} files
-                </div>
+              <ListGroup horizontal className="my-4">
+                <ListGroup.Item
+                  className={!directoryMode ? "bg-primary" : ""}
+                  onClick={() => {
+                    setDirectoryMode(false);
+                    setSelectedUsers([]);
+                  }}
+                >
+                  Upload Files
+                </ListGroup.Item>
+                <ListGroup.Item
+                  className={directoryMode ? "bg-primary" : ""}
+                  onClick={() => {
+                    setDirectoryMode(true);
+                  }}
+                >
+                  Upload Local Files
+                </ListGroup.Item>
+              </ListGroup>
+              {!directoryMode ? (
+                <Form.Group controlId="formFile" className="mb-3">
+                  <Form.Label>Choose File</Form.Label>
+                  <Form.Control
+                    onChange={(e) => setFile(e.target.files[0])}
+                    type="file"
+                    accept=".pdf,.docx"
+                  />
+                </Form.Group>
+              ) : (
+                <Button onClick={handleOpenDirectoryModal}>
+                  Choose from file directory
+                </Button>
               )}
 
               <Modal show={showModal} onHide={handleCloseModal}>

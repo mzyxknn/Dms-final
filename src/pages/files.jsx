@@ -249,7 +249,7 @@ const Files = () => {
     );
   }
 
-  const downloadFile = async (folder) => {
+  const downloadZip = async (folder) => {
     const res = await getFolderData(folder);
     console.log(res);
     const zip = new JSZip();
@@ -266,6 +266,11 @@ const Files = () => {
     // Generate the zip file
     const zipBlob = await zip.generateAsync({ type: "blob" });
     // Save the zip file
+    saveAs(zipBlob, folder + ".zip");
+  };
+
+  const downloadFile = (file) => {
+    saveAs(file, file);
   };
 
   function DropdownAction({ storage }) {
@@ -322,7 +327,7 @@ const Files = () => {
                 if (!storage.isFolder) {
                   downloadFile(storage.fileURL);
                 } else {
-                  downloadFile(storage.fileName);
+                  downloadZip(storage.fileName);
                 }
               }}
             >

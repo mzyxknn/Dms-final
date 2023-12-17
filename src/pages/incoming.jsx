@@ -79,7 +79,7 @@ const incoming = () => {
         createdAt: serverTimestamp(),
         message: message,
         status: "Seen",
-        seener: seener
+        seener: seener,
       });
     }
   };
@@ -139,9 +139,9 @@ const incoming = () => {
                 </tr>
               </thead>
               <tbody>
-                {urgentFiles.map((message) => {
+                {urgentFiles.map((message, index) => {
                   return (
-                    <tr key={message.code}>
+                    <tr key={index}>
                       <td>
                         <div className="flex">
                           <FaFile />
@@ -303,7 +303,6 @@ const incoming = () => {
         };
         setComposeModalOpen(false);
         addDoc(incomingExternalRef, dataObject).then(() => {
-          
           toast.success("Your message is succesfully sent!");
         });
       } catch (error) {
@@ -601,7 +600,7 @@ const incoming = () => {
     });
 
     setUsers(output);
-    
+
     onSnapshot(collection(db, "classification"), (snapshot) => {
       const output = [];
       snapshot.docs.forEach((doc) => {
@@ -623,7 +622,6 @@ const incoming = () => {
       });
       setActionData(output);
     });
-
 
     const q = query(messagesCollectionRef, orderBy("createdAt", "desc"));
 
@@ -647,7 +645,7 @@ const incoming = () => {
             }
           }
         });
-        
+
         setUrgentFiles(urgents);
         setMessages(messages);
         if (urgents.length >= 1) {
@@ -720,7 +718,6 @@ const incoming = () => {
     }
   });
 
-
   const classificationFilteredInternal = filteredMessages.filter((message) => {
     if (currentClassification == "") {
       return message;
@@ -729,14 +726,16 @@ const incoming = () => {
       return message;
     }
   });
-  const classificationFilteredExternal = filteredExternalMessages.filter((message) => {
-    if (currentClassification == "") {
-      return message;
+  const classificationFilteredExternal = filteredExternalMessages.filter(
+    (message) => {
+      if (currentClassification == "") {
+        return message;
+      }
+      if (message.classification == currentClassification) {
+        return message;
+      }
     }
-    if (message.classification == currentClassification) {
-      return message;
-    }
-  });
+  );
 
   return (
     <Layout>
@@ -820,27 +819,26 @@ const incoming = () => {
                 >
                   External
                 </ListGroup.Item>
-                
               </ListGroup>
-                <ListGroup className="col-lg-6 p-0 m-0">
-                  <ListGroup.Item style={{ border: "none" }}>
-                    <Form.Select
-                      aria-label="Default select example"
-                      onChange={(e) => setCurrentClassification(e.target.value)}
-                    >
-                      <option key={0} value={""}>
-                        Select Classification
+              <ListGroup className="col-lg-6 p-0 m-0">
+                <ListGroup.Item style={{ border: "none" }}>
+                  <Form.Select
+                    aria-label="Default select example"
+                    onChange={(e) => setCurrentClassification(e.target.value)}
+                  >
+                    <option key={0} value={""}>
+                      Select Classification
+                    </option>
+                    {classificationData.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.value}
                       </option>
-                      {classificationData.map((item) => (
-                        <option key={item.value} value={item.value}>
-                          {item.value}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  </ListGroup.Item>
-                </ListGroup>
+                    ))}
+                  </Form.Select>
+                </ListGroup.Item>
+              </ListGroup>
             </div>
-            
+
             <div className="flex display-flex  col-2">
               <Button
                 className="mx-0 mx-3 my-3"
@@ -885,7 +883,7 @@ const incoming = () => {
                 </tr>
               </thead>
               <tbody>
-              {classificationFilteredInternal.map((message) => {
+                {classificationFilteredInternal.map((message) => {
                   return (
                     <tr key={message.code}>
                       <td>
@@ -985,9 +983,9 @@ const incoming = () => {
               </thead>
               {externalMessages && (
                 <tbody>
-                  {classificationFilteredExternal.map((message) => {
+                  {classificationFilteredExternal.map((message, index) => {
                     return (
-                      <tr key={message.code}>
+                      <tr key={index}>
                         <td>
                           <div className="flex">
                             <FaFile />

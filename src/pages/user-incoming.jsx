@@ -157,9 +157,9 @@ const UserIncoming = () => {
                 </tr>
               </thead>
               <tbody>
-                {urgentFiles.map((message) => {
+                {urgentFiles.map((message, index) => {
                   return (
-                    <tr key={message.code}>
+                    <tr key={index}>
                       <td>
                         <div className="flex">
                           <FaFile />
@@ -836,27 +836,26 @@ const UserIncoming = () => {
                 >
                   External
                 </ListGroup.Item>
-                
               </ListGroup>
-                <ListGroup className="col-lg-6 p-0 m-0">
-                  <ListGroup.Item style={{ border: "none" }}>
-                    <Form.Select
-                      aria-label="Default select example"
-                      onChange={(e) => setCurrentClassification(e.target.value)}
-                    >
-                      <option key={0} value={""}>
-                        Select Classification
+              <ListGroup className="col-lg-6 p-0 m-0">
+                <ListGroup.Item style={{ border: "none" }}>
+                  <Form.Select
+                    aria-label="Default select example"
+                    onChange={(e) => setCurrentClassification(e.target.value)}
+                  >
+                    <option key={0} value={""}>
+                      Select Classification
+                    </option>
+                    {classificationData.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.value}
                       </option>
-                      {classificationData.map((item) => (
-                        <option key={item.value} value={item.value}>
-                          {item.value}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  </ListGroup.Item>
-                </ListGroup>
+                    ))}
+                  </Form.Select>
+                </ListGroup.Item>
+              </ListGroup>
             </div>
-            
+
             <div className="flex display-flex  col-2">
               <Button
                 className="mx-0 mx-3 my-3"
@@ -1000,9 +999,9 @@ const UserIncoming = () => {
                 </tr>
               </thead>
               <tbody>
-                {classificationFilteredExternal.map((message) => {
+                {classificationFilteredExternal.map((message, index) => {
                   return (
-                    <tr key={message.code}>
+                    <tr key={index}>
                       <td>
                         <div className="flex">
                           <FaFile />

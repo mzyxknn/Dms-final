@@ -1398,9 +1398,9 @@ const Outgoing = () => {
               </thead>
               {externalMessages && (
                 <tbody>
-                  {classificationFilteredExternal.map((message) => {
+                  {classificationFilteredExternal.map((message, index) => {
                     return (
-                      <tr key={message.code}>
+                      <tr key={index}>
                         <td>
                           <div className="flex">
                             <FaFile />

@@ -514,9 +514,9 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {classificationFiltered.map((message) => {
+                {classificationFiltered.map((message, index) => {
                   return (
-                    <tr key={message.code}>
+                    <tr key={index}>
                       <td>
                         <div className="flex p-1 m-1 justify-content-center">
                           <FaFile />

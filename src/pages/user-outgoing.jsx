@@ -401,17 +401,17 @@ const UserOutgoing = () => {
     const handleUpload = async () => {
       setLoading(true);
       setShow(false);
-    
+
       const generateRandomCode = () => {
         const min = 1000;
         const max = 99999;
         return Math.floor(Math.random() * (max - min + 1)) + min;
       };
-    
+
       const generateCodeForUser = () => {
         return generateRandomCode().toString();
       };
-    
+
       const uploadFile = async (file) => {
         const storageRef = ref(storage, `uploads/${file.name}`);
         try {
@@ -423,7 +423,7 @@ const UserOutgoing = () => {
           throw new Error("Error uploading file. Please try again.");
         }
       };
-    
+
       const handleDocumentForUser = async (user, fileUrl) => {
         try {
           const dataObjectCopy = {
@@ -447,27 +447,37 @@ const UserOutgoing = () => {
             createdAt: serverTimestamp(),
             isSendToAll: props.currentUser.uid === user.id,
           };
-    
-          const documentRef = await addDoc(messagesCollectionRef, dataObjectCopy);
-          setShowModal(false)
-          await addDoc(collection(db, "routing", documentRef.id, documentRef.id), {
-            createdAt: serverTimestamp(),
-            message: dataObjectCopy,
-            status: "Created",
-          });
-    
-          toast.success(`Your message is successfully sent to ${user.fullName}`);
+
+          const documentRef = await addDoc(
+            messagesCollectionRef,
+            dataObjectCopy
+          );
+          setShowModal(false);
+          await addDoc(
+            collection(db, "routing", documentRef.id, documentRef.id),
+            {
+              createdAt: serverTimestamp(),
+              message: dataObjectCopy,
+              status: "Created",
+            }
+          );
+
+          toast.success(
+            `Your message is successfully sent to ${user.fullName}`
+          );
           sendEmail(fileUrl, user);
         } catch (error) {
           console.error("Error handling document for user:", error);
-          toast.error(`Error sending document to ${user.fullName}. Please try again.`);
+          toast.error(
+            `Error sending document to ${user.fullName}. Please try again.`
+          );
         }
       };
-    
+
       try {
         if (file) {
           const fileUrl = await uploadFile(file);
-    
+
           if (enableSMS && currentPage === "internal") {
             if (!multipe) {
               sendEmail(fileUrl);
@@ -477,7 +487,7 @@ const UserOutgoing = () => {
               const promises = selectedUsers.map((user) => {
                 return handleDocumentForUser(user, fileUrl);
               });
-    
+
               await Promise.all(promises);
             }
           } else {
@@ -490,15 +500,13 @@ const UserOutgoing = () => {
         }
       } catch (error) {
         console.error("Error handling upload:", error);
-        toast.error(error.message || "Error sending document. Please try again.");
+        toast.error(
+          error.message || "Error sending document. Please try again."
+        );
       } finally {
         setLoading(false);
       }
     };
-    
-    
-    
-    
 
     const handleSelectedUsers = (user) => {
       setSelectedUsers((prevSelectedUsers) => {
@@ -540,7 +548,9 @@ const UserOutgoing = () => {
                 type="text"
                 placeholder="Document Code"
               />
-              <Button onClick={generateRandomCode} disabled={multipe}>Generate</Button>
+              <Button onClick={generateRandomCode} disabled={multipe}>
+                Generate
+              </Button>
             </Form.Group>
             <Form.Label>Sender</Form.Label>
             <Form.Control
@@ -566,7 +576,9 @@ const UserOutgoing = () => {
               </ListGroup.Item>
               <ListGroup.Item
                 className={multipe ? "bg-primary" : ""}
-                onClick={() => {setMultiple(true)}}
+                onClick={() => {
+                  setMultiple(true);
+                }}
               >
                 Multiple
               </ListGroup.Item>
@@ -1007,7 +1019,8 @@ const UserOutgoing = () => {
       if (message.classification == currentClassification) {
         return message;
       }
-    });
+    }
+  );
   return (
     <LayoutUser>
       {currentMessage && (
@@ -1138,9 +1151,9 @@ const UserOutgoing = () => {
                 </tr>
               </thead>
               <tbody>
-                {classificationFilteredInternal.map((message) => {
+                {classificationFilteredInternal.map((message, index) => {
                   return (
-                    <tr key={message.code}>
+                    <tr key={index}>
                       <td>
                         <div className="flex">
                           <FaFile />
@@ -1242,9 +1255,9 @@ const UserOutgoing = () => {
               </thead>
               {externalMessages && (
                 <tbody>
-                  {classificationFilteredExternal.map((message) => {
+                  {classificationFilteredExternal.map((message, index) => {
                     return (
-                      <tr key={message.code}>
+                      <tr key={index}>
                         <td>
                           <div className="flex">
                             <FaFile />

@@ -251,22 +251,25 @@ const UserFiles = () => {
 
   const downloadZip = async (folder) => {
     const res = await getFolderData(folder);
-    console.log(res);
-    const zip = new JSZip();
-    // Fetch files from URIs and add them to the zip
-    const fetchAndAddToZip = async (uri, fileName) => {
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      zip.file(fileName, blob);
-    };
-    const fetchPromises = res.map(({ fileURL, fileName }) =>
-      fetchAndAddToZip(fileURL, fileName)
-    );
-    await Promise.all(fetchPromises);
-    // Generate the zip file
-    const zipBlob = await zip.generateAsync({ type: "blob" });
-    // Save the zip file
-    saveAs(zipBlob, folder + ".zip");
+    if (res.length >= 1) {
+      const zip = new JSZip();
+      // Fetch files from URIs and add them to the zip
+      const fetchAndAddToZip = async (uri, fileName) => {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        zip.file(fileName, blob);
+      };
+      const fetchPromises = res.map(({ fileURL, fileName }) =>
+        fetchAndAddToZip(fileURL, fileName)
+      );
+      await Promise.all(fetchPromises);
+      // Generate the zip file
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      // Save the zip file
+      saveAs(zipBlob, folder + ".zip");
+    } else {
+      toast.error("The folder is empty!");
+    }
   };
 
   const downloadFile = (file) => {

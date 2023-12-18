@@ -727,6 +727,12 @@ function ViewModal(props) {
                             )}
                           </button>
                         </div>
+                        <label htmlFor="">Add remarks</label>
+                        <input
+                          onChange={(e) => setRemarks(e.target.value)}
+                          type="text"
+                          className="form-control"
+                        />
                       </Form.Group>
                     ) : (
                       <>
@@ -745,6 +751,12 @@ function ViewModal(props) {
                             Upload Files
                           </Button>
                         </div>
+                        <label htmlFor="">Add remarks</label>
+                        <input
+                          onChange={(e) => setRemarks(e.target.value)}
+                          type="text"
+                          className="form-control"
+                        />
 
                         {selectedFilesCompose.length > 0 && (
                           <div className="mt-2">

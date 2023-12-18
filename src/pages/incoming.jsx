@@ -390,7 +390,7 @@ const incoming = () => {
               />
             </Form.Group>
             <div className="row">
-              <div className="col-lg-6">
+              <div className="col-12">
                 <Form.Label>Prioritization</Form.Label>
                 <Form.Select
                   onChange={(e) => setPrioritization(e.target.value)}
@@ -402,7 +402,7 @@ const incoming = () => {
                 </Form.Select>
               </div>
 
-              <div className="col-lg-6">
+              <div className="col-12">
                 <Form.Label>Classification</Form.Label>
                 <Form.Select
                   onChange={(e) => setClassification(e.target.value)}
@@ -414,7 +414,7 @@ const incoming = () => {
                   })}
                 </Form.Select>
               </div>
-              <div className="col-lg-6">
+              <div className="col-12">
                 <Form.Label>Sub Classification</Form.Label>
                 <Form.Select
                   onChange={(e) => setSubClassification(e.target.value)}
@@ -426,7 +426,7 @@ const incoming = () => {
                   })}
                 </Form.Select>
               </div>
-              <div className="col-lg-6">
+              <div className="col-12">
                 <Form.Label>Action</Form.Label>
                 <Form.Select
                   onChange={(e) => setAction(e.target.value)}
@@ -438,14 +438,14 @@ const incoming = () => {
                   })}
                 </Form.Select>
               </div>
-              <div className="col-lg-6">
+              <div className="col-12">
                 <Form.Label>Due Date (Optional)</Form.Label>
                 <Form.Control
                   onChange={(e) => setDueDate(e.target.value)}
                   type="date"
                 />
               </div>
-              {/* <div className="col-lg-6">
+              {/* <div className="col-12">
                 <Form.Label>Deliver Type</Form.Label>
 
                 <Form.Select
@@ -458,7 +458,7 @@ const incoming = () => {
                   <option value="Combination">Combination</option>
                 </Form.Select>
               </div> */}
-              <div className="col-lg-6">
+              <div className="col-12">
                 <Form.Label>Document Flow</Form.Label>
 
                 <Form.Control

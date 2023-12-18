@@ -362,13 +362,13 @@ const Layout = ({ children }) => {
               />
             )}
             {user && (
-              <p className="mb-0 mx-2">
+              <p className="mb-0 mx-2 text-white">
                 {" "}
-                {user.fullName} - <b>Administrator</b>
+                {user.fullName} - <b className="text-white">Administrator</b>
               </p>
             )}{" "}
             {user && getOffice && (
-              <p className="mb-0">{getOffice(user.office).officeName}</p>
+              <p className="mb-0 text-white">{getOffice(user.office).officeName}</p>
             )}
             <Dropdown>
               <Dropdown.Toggle id="dropdown-basic"></Dropdown.Toggle>

@@ -607,9 +607,9 @@ const incoming = () => {
         </Dropdown.Toggle>
 
         <Dropdown.Menu>
-          <Dropdown.Item onClick={handleDelete}>
+          {/*<Dropdown.Item onClick={handleDelete}>
             Delete <FaTrash />
-          </Dropdown.Item>
+          </Dropdown.Item>*/}
           <Dropdown.Item onClick={downloadFIle}>
             Download <FaDownload />
           </Dropdown.Item>

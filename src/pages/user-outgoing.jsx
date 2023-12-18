@@ -545,11 +545,14 @@ const UserOutgoing = () => {
               <>
                 {!multipe ? (
                   <>
-                    <label htmlFor="">Receiever</label>
+                    <label htmlFor="">Receiver</label>
                     <Form.Select
                       onChange={(e) => setReciever(e.target.value)}
                       className="mb-3"
                     >
+                      <option key={0} value={0}>
+                        Please select a receiever
+                      </option>
                       {/* <option key={0} value={0}>
                       Please select a receiever
                     </option>
@@ -881,9 +884,9 @@ const UserOutgoing = () => {
           <Dropdown.Item onClick={downloadFIle}>
             Download <FaDownload />
           </Dropdown.Item>
-          <Dropdown.Item onClick={handleDelete}>
+          {/*<Dropdown.Item onClick={handleDelete}>
             Delete <FaTrash />
-          </Dropdown.Item>
+          </Dropdown.Item>*/}
           <Dropdown.Item
             onClick={() => {
               setCurrentMessage(message);
@@ -945,9 +948,9 @@ const UserOutgoing = () => {
           >
             View Detail <FaEye />
           </Dropdown.Item>
-          <Dropdown.Item onClick={handleDelete}>
+          {/*<Dropdown.Item onClick={handleDelete}>
             Delete <FaTrash />
-          </Dropdown.Item>
+          </Dropdown.Item>*/}
           <Dropdown.Item onClick={downloadFIle}>
             Download <FaDownload />
           </Dropdown.Item>
@@ -1179,8 +1182,9 @@ const UserOutgoing = () => {
                 <ListGroup.Item
                   className={`${
                     currentPage == "internal" ? "bg-info text-white" : ""
-                  } px-5 fw-bold`}
+                  } px-5 fw-bold text-center`}
                   onClick={() => setCurrentPage("internal")}
+                  style={{ width: '200px', marginLeft: '-130px'}}
                 >
                   Internal
                 </ListGroup.Item>

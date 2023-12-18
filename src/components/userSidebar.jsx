@@ -45,6 +45,8 @@ const UserSidebar = ({ onHide }) => {
                 className={`flex my-2 nav-link w-100 justify-content-start p-1 py-2 ${
                   location == "/user-files" ? "active" : ""
                 }`}
+                onMouseOver={(e) => (e.target.style.color = "white")}
+                onMouseOut={(e) => (e.target.style.color = "black")}
               >
                 <FaFile size={"20px"} />
                 <p className="mb-0 mx-2">Files</p>
@@ -53,6 +55,8 @@ const UserSidebar = ({ onHide }) => {
                 className={`flex my-2 nav-link w-100 justify-content-start p-1 py-2 ${
                   location == "/user-reports" ? "active" : ""
                 }`}
+                onMouseOver={(e) => (e.target.style.color = "white")}
+                onMouseOut={(e) => (e.target.style.color = "black")}
                 to={"/user-reports"}
               >
                 <FaFilePdf size={"20px"} />
@@ -63,6 +67,8 @@ const UserSidebar = ({ onHide }) => {
                 className={`flex my-2 nav-link w-100 justify-content-start p-1 py-2 ${
                   location == "/user-outgoing" ? "active" : ""
                 }`}
+                onMouseOver={(e) => (e.target.style.color = "white")}
+                onMouseOut={(e) => (e.target.style.color = "black")}
               >
                 <FaFolder size={"20px"} />
                 <p className="mb-0 mx-2">Outgoing</p>
@@ -72,6 +78,8 @@ const UserSidebar = ({ onHide }) => {
                 className={`flex my-2 nav-link w-100 justify-content-start p-1 py-2 ${
                   location == "/user-incoming" ? "active" : ""
                 }`}
+                onMouseOver={(e) => (e.target.style.color = "white")}
+                onMouseOut={(e) => (e.target.style.color = "black")}
               >
                 <FaFolder size={"20px"} />
                 <p className="mb-0 mx-2">Incoming</p>

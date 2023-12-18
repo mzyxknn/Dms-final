@@ -139,7 +139,7 @@ const UserFiles = () => {
           <h6 className="fw-bold text-white px-3 mb-0 py-1">Add Folder</h6>
         </Button>{" "}
         <Modal size="lg" show={show} onHide={handleClose}>
-          <Modal.Header className="bg-primary" closeButton>
+          <Modal.Header className="bg-primary text-white" closeButton>
             <Modal.Title>Folder Name</Modal.Title>
           </Modal.Header>
           <Modal.Body>
@@ -232,7 +232,7 @@ const UserFiles = () => {
           <h6 className="fw-bold text-white px-3 mb-0 py-1">Upload Files</h6>
         </Button>{" "}
         <Modal size="lg" show={show} onHide={handleClose}>
-          <Modal.Header className="bg-primary" closeButton>
+          <Modal.Header className="bg-primary text-white" closeButton>
             <Modal.Title>File Name</Modal.Title>
           </Modal.Header>
           <Modal.Body>

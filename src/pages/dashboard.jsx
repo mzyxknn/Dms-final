@@ -431,7 +431,7 @@ const Dashboard = () => {
             <div className="col-lg-6  my-2 my-lg-0">
               <ListGroup
                 horizontal
-                className="d-flex align-items-center justify-content-between"
+                className="d-flex align-items-center" 
               >
                 <ListGroup.Item
                   className={`${filter == "all" ? "bg-secondary" : ""}`}

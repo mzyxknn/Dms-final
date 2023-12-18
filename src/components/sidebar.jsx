@@ -14,8 +14,10 @@ import { Link, useLocation } from "react-router-dom";
 
 const Sidebar = ({ onHide }) => {
   const [sidebarShow, setSidebarShow] = useState(true);
+  
 
   const location = useLocation().pathname;
+
 
   return (
     <>
@@ -30,7 +32,7 @@ const Sidebar = ({ onHide }) => {
         )}
 
         <div className={`sidebar vh-100  ${sidebarShow ? "" : "inactive"}`}>
-          <div className="w-100 d-flex justify-content-end aling-items-center">
+          <div className="w-100 d-flex justify-content-end align-items-center">
             <FaTimes onClick={onHide} size={"25"} />
           </div>
           <div className="sidebar-header d-flex justify-content-center align-items-center flex-column">
@@ -42,10 +44,12 @@ const Sidebar = ({ onHide }) => {
             <h5 className="fw-bold b-1">Menu</h5>
             <div className="navigation mt-3 d-flex flex-column justify-content-start align-items-start">
               <Link
-                className={`flex my-2 nav-link w-100 justify-content-start p-1 py-2 ${
-                  location == "/dashboard" ? "active" : ""
-                }`}
                 to={"/dashboard"}
+                className={`flex my-2 nav-link w-100 justify-content-start p-1 py-2 ${
+                  location === "/dashboard" ? "active" : ""
+                }`}
+                onMouseOver={(e) => (e.target.style.color = "white")}
+                onMouseOut={(e) => (e.target.style.color = "black")}
               >
                 <FaHome size={"20px"} />
                 <p className="mb-0 mx-2">Dashboard</p>
@@ -55,6 +59,8 @@ const Sidebar = ({ onHide }) => {
                 className={`flex my-2 nav-link w-100 justify-content-start p-1 py-2 ${
                   location == "/files" ? "active" : ""
                 }`}
+                onMouseOver={(e) => (e.target.style.color = "white")}
+                onMouseOut={(e) => (e.target.style.color = "black")}
               >
                 <FaFile size={"20px"} />
                 <p className="mb-0 mx-2">Files</p>
@@ -63,6 +69,8 @@ const Sidebar = ({ onHide }) => {
                 className={`flex my-2 nav-link w-100 justify-content-start p-1 py-2 ${
                   location == "/reports" ? "active" : ""
                 }`}
+                onMouseOver={(e) => (e.target.style.color = "white")}
+                onMouseOut={(e) => (e.target.style.color = "black")}
                 to={"/reports"}
               >
                 <FaFilePdf size={"20px"} />
@@ -73,6 +81,8 @@ const Sidebar = ({ onHide }) => {
                 className={`flex my-2 nav-link w-100 justify-content-start p-1 py-2 ${
                   location == "/outgoing" ? "active" : ""
                 }`}
+                onMouseOver={(e) => (e.target.style.color = "white")}
+                onMouseOut={(e) => (e.target.style.color = "black")}
               >
                 <FaFolder size={"20px"} />
                 <p className="mb-0 mx-2">Outgoing</p>
@@ -82,6 +92,8 @@ const Sidebar = ({ onHide }) => {
                 className={`flex my-2 nav-link w-100 justify-content-start p-1 py-2 ${
                   location == "/incoming" ? "active" : ""
                 }`}
+                onMouseOver={(e) => (e.target.style.color = "white")}
+                onMouseOut={(e) => (e.target.style.color = "black")}
               >
                 <FaFolder size={"20px"} />
                 <p className="mb-0 mx-2">Incoming</p>
@@ -97,6 +109,8 @@ const Sidebar = ({ onHide }) => {
                 className={`flex my-2 nav-link w-100 justify-content-start p-1 py-2 ${
                   location == "/create-user" ? "active" : ""
                 }`}
+                onMouseOver={(e) => (e.target.style.color = "white")}
+                onMouseOut={(e) => (e.target.style.color = "black")}
               >
                 <FaUser size={"20px"} />
                 <p className="mb-0 mx-2">User Management</p>
@@ -106,6 +120,8 @@ const Sidebar = ({ onHide }) => {
                 className={`flex my-2 nav-link w-100 justify-content-start p-1 py-2 ${
                   location == "/office-management" ? "active" : ""
                 }`}
+                onMouseOver={(e) => (e.target.style.color = "white")}
+                onMouseOut={(e) => (e.target.style.color = "black")}
               >
                 <FaPeopleCarry size={"20px"} />
                 <p className="mb-0 mx-2">Office Management</p>

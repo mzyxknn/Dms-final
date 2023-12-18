@@ -120,13 +120,17 @@ const UserFiles = () => {
     const handleShow = () => setShow(true);
 
     const createFolder = () => {
-      const data = {
-        owner: auth.currentUser.uid,
-        isFolder: true,
-        fileName: folderName,
-        createdAt: serverTimestamp(),
-      };
-      addDoc(collection(db, "storage", auth.currentUser.uid, "files"), data);
+      if (folderName == null) {
+        toast.error("Folder name is empty!");
+      } else {
+        const data = {
+          owner: auth.currentUser.uid,
+          isFolder: true,
+          fileName: folderName,
+          createdAt: serverTimestamp(),
+        };
+        addDoc(collection(db, "storage", auth.currentUser.uid, "files"), data);
+      }
     };
 
     return (
@@ -365,6 +369,23 @@ const UserFiles = () => {
     }
   }, []);
 
+  const filterUniqueStorages = (storages) => {
+    const uniqueStorages = [];
+
+    storages.forEach((storage) => {
+      // Check if the storage's fileName is not already in uniqueStorages
+      if (
+        uniqueStorages.findIndex((s) => s.fileName === storage.fileName) === -1
+      ) {
+        uniqueStorages.push(storage);
+      }
+    });
+
+    return uniqueStorages;
+  };
+
+  const storageUnique = filterUniqueStorages(storages);
+
   return (
     <LayoutUser>
       <div className="App"></div>
@@ -429,7 +450,7 @@ const UserFiles = () => {
             </tr>
           </thead>
           <tbody>
-            {storages.map((storage) => (
+            {storageUnique.map((storage) => (
               <tr key={storage.id}>
                 <td
                   style={{ cursor: "pointer" }}

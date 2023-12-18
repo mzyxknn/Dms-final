@@ -308,7 +308,7 @@ function ViewModal(props) {
 
       addDoc(remarksRef, {
         createdAt: serverTimestamp(),
-        remarks: !remarks.trim() ? "N/A" : remarks,
+        remarks: !remarks.trim() ? "Received" : remarks,
         user: auth.currentUser.uid,
       });
 
@@ -335,7 +335,7 @@ function ViewModal(props) {
       });
       addDoc(remarksRef, {
         createdAt: serverTimestamp(),
-        remarks: !remarks.trim() ? "N/A" : remarks,
+        remarks: !remarks.trim() ? "Rejected" : remarks,
         user: auth.currentUser.uid,
       });
       const receiverCollection = collection(

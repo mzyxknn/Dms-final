@@ -520,25 +520,27 @@ const Outgoing = () => {
               className="mb-3"
               disabled
             />
-            <ListGroup horizontal className="my-2">
-              <ListGroup.Item
-                className={!multipe ? "bg-primary" : ""}
-                onClick={() => {
-                  setMultiple(false);
-                  setSelectedUsers([]);
-                }}
-              >
-                Single
-              </ListGroup.Item>
-              <ListGroup.Item
-                className={multipe ? "bg-primary" : ""}
-                onClick={() => {
-                  setMultiple(true);
-                }}
-              >
-                Multiple
-              </ListGroup.Item>
-            </ListGroup>
+            {currentPage == "internal" && (
+              <ListGroup horizontal className="my-2">
+                <ListGroup.Item
+                  className={!multipe ? "bg-primary" : ""}
+                  onClick={() => {
+                    setMultiple(false);
+                    setSelectedUsers([]);
+                  }}
+                >
+                  Single
+                </ListGroup.Item>
+                <ListGroup.Item
+                  className={multipe ? "bg-primary" : ""}
+                  onClick={() => {
+                    setMultiple(true);
+                  }}
+                >
+                  Multiple
+                </ListGroup.Item>
+              </ListGroup>
+            )}
 
             {currentPage == "internal" && (
               <>
@@ -604,10 +606,13 @@ const Outgoing = () => {
             )}
 
             {currentPage == "external" && (
-              <Form.Control
-                type="text"
-                onChange={(e) => setReciever(e.target.value)}
-              />
+              <>
+                <label htmlFor="">Receiver</label>
+                <Form.Control
+                  type="text"
+                  onChange={(e) => setReciever(e.target.value)}
+                />
+              </>
             )}
 
             <Form.Group

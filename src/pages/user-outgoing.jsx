@@ -544,11 +544,13 @@ const UserOutgoing = () => {
             {currentPage == "internal" && (
               <>
                 {!multipe ? (
-                  <Form.Select
-                    onChange={(e) => setReciever(e.target.value)}
-                    className="mb-3"
-                  >
-                    <option key={0} value={0}>
+                  <>
+                    <label htmlFor="">Receiever</label>
+                    <Form.Select
+                      onChange={(e) => setReciever(e.target.value)}
+                      className="mb-3"
+                    >
+                      {/* <option key={0} value={0}>
                       Please select a receiever
                     </option>
                     <option
@@ -557,27 +559,30 @@ const UserOutgoing = () => {
                       value={props.currentUser.uid}
                     >
                       Send to all
-                    </option>
-                    {users &&
-                      users.map((user) => {
-                        if (
-                          user.id !== props.currentUser.uid &&
-                          getOfficeStatus(user.office) == "Active"
-                        ) {
-                          return (
-                            <option
-                              className={`${
-                                user.role == "admin" ? "bg-info text-white" : ""
-                              }`}
-                              key={user.id}
-                              value={user.id}
-                            >
-                              {user.fullName}
-                            </option>
-                          );
-                        }
-                      })}
-                  </Form.Select>
+                    </option> */}
+                      {users &&
+                        users.map((user) => {
+                          if (
+                            user.id !== props.currentUser.uid &&
+                            getOfficeStatus(user.office) == "Active"
+                          ) {
+                            return (
+                              <option
+                                className={`${
+                                  user.role == "admin"
+                                    ? "bg-info text-white"
+                                    : ""
+                                }`}
+                                key={user.id}
+                                value={user.id}
+                              >
+                                {user.fullName}
+                              </option>
+                            );
+                          }
+                        })}
+                    </Form.Select>
+                  </>
                 ) : (
                   <div className="row">
                     {users.map((user) => {
@@ -1179,14 +1184,14 @@ const UserOutgoing = () => {
                 >
                   Internal
                 </ListGroup.Item>
-                <ListGroup.Item
+                {/* <ListGroup.Item
                   className={`${
                     currentPage == "external" ? "bg-info text-white" : ""
                   } px-5 fw-bold`}
                   onClick={() => setCurrentPage("external")}
                 >
                   External
-                </ListGroup.Item>
+                </ListGroup.Item> */}
               </ListGroup>
               <ListGroup className="col-lg-6 p-0 m-0">
                 <ListGroup.Item style={{ border: "none" }}>

@@ -847,14 +847,14 @@ const UserIncoming = () => {
                 >
                   Internal
                 </ListGroup.Item>
-                {/* <ListGroup.Item
+                <ListGroup.Item
                   className={`${
                     currentPage == "external" ? "bg-info text-white" : ""
                   } px-5 fw-bold`}
                   onClick={() => setCurrentPage("external")}
                 >
                   External
-                </ListGroup.Item> */}
+                </ListGroup.Item>
               </ListGroup>
               <ListGroup className="col-lg-6 p-0 m-0">
                 <ListGroup.Item style={{ border: "none" }}>

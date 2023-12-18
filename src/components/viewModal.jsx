@@ -662,6 +662,7 @@ function ViewModal(props) {
                     type="text"
                     className="form-control"
                     value={currentMessage.description}
+                    disabled
                   />
                 </div>
               </div>

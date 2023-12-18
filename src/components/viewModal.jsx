@@ -3,7 +3,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { FaBook, FaEye, FaUser } from "react-icons/fa";
 import Badge from "react-bootstrap/Badge";
-import { ModalBody, Spinner, Table } from "react-bootstrap";
+import { Form, ListGroup, ModalBody, Spinner, Table } from "react-bootstrap";
 import {
   addDoc,
   collection,
@@ -21,6 +21,7 @@ import { auth, db, storage } from "../../firebase";
 import { toast } from "react-toastify";
 import moment from "moment";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import FileDirectoryModal from "./FileDirectoryModal";
 
 function ViewFile(props) {
   const [show, setShow] = useState(false);
@@ -127,6 +128,31 @@ function ViewModal(props) {
   const [isDeadline, setIsDeadline] = useState(false);
   const [reason, setReason] = useState("");
   const [reasonData, setReasonData] = useState("");
+  const [directoryMode, setDirectoryMode] = useState(
+    currentMessage.filesFromDirectory
+  );
+
+  const [showDirectoryModal, setShowDirectoryModal] = useState(false);
+  const [selectedFilesCompose, setSelectedFilesCompose] = useState([]);
+
+  // Function to open the file directory modal
+  const handleOpenDirectoryModal = () => {
+    setShowDirectoryModal(true);
+  };
+
+  // Function to close the file directory modal
+  const handleCloseDirectoryModal = () => {
+    setShowDirectoryModal(false);
+  };
+
+  const handleSelectFileCompose = (selectedFile) => {
+    setSelectedFilesCompose(selectedFile);
+  };
+
+  const handleSelectFile = (files) => {
+    setSelectedFiles(files);
+    handleCloseModal();
+  };
 
   function Confirmation() {
     return (
@@ -263,7 +289,9 @@ function ViewModal(props) {
     setIsDeadline(isDue);
 
     onSnapshot(doc(db, "reason", currentMessage.id), (res) => {
-      setReason(res.data().remarks);
+      if (res.data() !== undefined) {
+        setReason(res.data().remarks);
+      }
     });
   }, [currentMessage]);
 
@@ -417,11 +445,21 @@ function ViewModal(props) {
   };
 
   const handleSubmit = (url) => {
+    let output = "";
+    selectedFilesCompose.map((file) => {
+      output += file.fileName + " ,";
+    });
+
+    const fileTitle = output.substring(0, 20) + "....";
+
     if (props.currentPage == "internal") {
       const messageRef = doc(db, "messages", currentMessage.id);
       updateDoc(messageRef, {
-        fileUrl: url,
-        fileName: file.name,
+        fileUrl:
+          selectedFilesCompose.length >= 1
+            ? JSON.stringify(selectedFilesCompose)
+            : url,
+        fileName: selectedFilesCompose.length >= 1 ? fileTitle : file.name,
         status: "Pending",
       });
 
@@ -466,6 +504,7 @@ function ViewModal(props) {
       uploadBytes(storageRef, file).then((snapshot) => {
         getDownloadURL(storageRef)
           .then((url) => {
+            console.log(url);
             if (url) {
               handleSubmit(url);
               setLoading(false);
@@ -496,9 +535,18 @@ function ViewModal(props) {
       index === self.findIndex((o) => o.seener === obj.seener)
   );
 
+  console.log(selectedFilesCompose);
+
   return (
     <>
       <Confirmation />
+
+      <FileDirectoryModal
+        showModal={showDirectoryModal}
+        handleCloseModal={handleCloseDirectoryModal}
+        handleSelectFile={handleSelectFileCompose}
+      />
+
       <Modal
         size="xl"
         aria-labelledby="contained-modal-title-vcenter"
@@ -644,6 +692,70 @@ function ViewModal(props) {
                   );
                 })}
 
+              {currentMessage.filesFromDirectory &&
+                (currentMessage.status == "Rejected" ||
+                  currentMessage.status == "In Progress") &&
+                currentMessage.sender == auth.currentUser.uid && (
+                  <>
+                    <ListGroup horizontal className="my-4">
+                      <ListGroup.Item>
+                        <Button disabled={directoryMode}>Upload Files</Button>
+                      </ListGroup.Item>
+                      <ListGroup.Item>
+                        <Button disabled={!directoryMode}>
+                          Upload Local Files
+                        </Button>
+                      </ListGroup.Item>
+                    </ListGroup>
+                    {!directoryMode ? (
+                      <Form.Group controlId="formFile" className="mb-3">
+                        <Form.Label>Choose File</Form.Label>
+                        <Form.Control
+                          onChange={(e) => setFile(e.target.files[0])}
+                          type="file"
+                          accept=".pdf,.docx"
+                        />
+                        <div className="w-100 d-flex justify-content-center align-items-center mt-3">
+                          <button
+                            onClick={handleUpload}
+                            className="btn btn-primary  mb-0 mx-3"
+                          >
+                            {loading ? (
+                              <Spinner animation="border" variant="secondary" />
+                            ) : (
+                              "Upload File"
+                            )}
+                          </button>
+                        </div>
+                      </Form.Group>
+                    ) : (
+                      <>
+                        <div className="w-100 d-flex justify-content-center align-item-center mt-3">
+                          <Button
+                            className="mx-3 px-3"
+                            onClick={handleOpenDirectoryModal}
+                          >
+                            Choose from file directory
+                          </Button>
+                          <Button
+                            variant="info"
+                            className="px-3"
+                            onClick={handleSubmit}
+                          >
+                            Upload Files
+                          </Button>
+                        </div>
+
+                        {selectedFilesCompose.length > 0 && (
+                          <div className="mt-2">
+                            Selected {selectedFilesCompose.length} files
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </>
+                )}
+
               {currentMessage.status !== "In Progress" &&
                 !currentMessage.filesFromDirectory && (
                   <div className="col-12">
@@ -686,6 +798,7 @@ function ViewModal(props) {
                 )}
               {currentMessage.status == "Rejected" &&
                 auth.currentUser.uid == currentMessage.sender &&
+                !currentMessage.filesFromDirectory &&
                 !props.dashboard && (
                   <>
                     <div className="col-12 my-3 flex justify-content-start align-items-center">

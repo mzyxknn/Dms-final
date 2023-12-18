@@ -61,7 +61,7 @@ const FileDirectoryModal = ({
   };
 
   return (
-    <Modal show={showModal} onHide={handleCloseModal}>
+    <Modal style={{ zIndex: 99999 }} show={showModal} onHide={handleCloseModal}>
       <Modal.Header closeButton>
         <Modal.Title>Select a File</Modal.Title>
       </Modal.Header>

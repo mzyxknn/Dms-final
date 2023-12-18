@@ -362,10 +362,11 @@ const Outgoing = () => {
           deliverType: deliverType || null,
           documentFlow: currentPage == "internal" ? "Internal" : "External",
           attachmentDetail: attachmentDetail || null,
-          fileUrl:
-            selectedFilesCompose.length >= 1
+          fileUrl: directoryMode
+            ? selectedFilesCompose.length >= 1
               ? JSON.stringify(selectedFilesCompose)
-              : fileUrl || "N/A",
+              : "N/A"
+            : fileUrl || "N/A",
           fileName:
             selectedFilesCompose.length >= 1 ? fileTitle : file.name || "N/A",
           status: selectedFilesCompose.length >= 1 ? "Pending" : documentState,

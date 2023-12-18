@@ -47,6 +47,9 @@ import PlaceHolder from "../components/placeholder";
 import moment from "moment";
 import Routing from "../components/routing";
 
+import { saveAs } from "file-saver";
+import JSZip from "jszip";
+
 const userCollectionRef = collection(db, "users");
 const messagesCollectionRef = collection(db, "messages");
 const incomingExternalRef = collection(db, "incoming-external");
@@ -517,15 +520,31 @@ const UserIncoming = () => {
   }
 
   function DropdownAction({ message }) {
-    const downloadFIle = () => {
-      const fileUrl = message.fileUrl;
-      const link = document.createElement("a");
-      link.href = fileUrl;
-      link.target = "_blank";
-      link.download = "downloaded_file";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    const downloadFIle = async () => {
+      try {
+        const parse = await JSON.parse(message.fileUrl);
+        const zip = new JSZip();
+        const fetchAndAddToZip = async (uri, fileName) => {
+          const response = await fetch(uri);
+          const blob = await response.blob();
+          zip.file(fileName, blob);
+        };
+        const fetchPromises = parse.map(({ fileURL, fileName }) =>
+          fetchAndAddToZip(fileURL, fileName)
+        );
+        await Promise.all(fetchPromises);
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        saveAs(zipBlob, "dms" + ".zip");
+      } catch (error) {
+        const fileUrl = message.fileUrl;
+        const link = document.createElement("a");
+        link.href = fileUrl;
+        link.target = "_blank";
+        link.download = "downloaded_file";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     };
 
     const handleDelete = () => {

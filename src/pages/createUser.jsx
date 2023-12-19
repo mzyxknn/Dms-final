@@ -3,7 +3,6 @@ import Layout from "../layout/layout";
 import { Button, Dropdown, Modal, Table, Form } from "react-bootstrap";
 import {
   FaDownload,
-  FaEdit,
   FaEye,
   FaFile,
   FaSuitcase,
@@ -45,251 +44,21 @@ function DeleteModal({ showModal, handleClose, handleDelete }) {
   );
 }
 
-function EditModal({ show, onHide, user, handleEdit }) {
-  const [fullName, setFullName] = useState(user.fullName || "");
-  const [email, setEmail] = useState(user.email || "");
-  const [phone, setPhone] = useState(user.phone || "");
-  const [password, setPassword] = useState("");
-  const [position, setPosition] = useState(user.position || "");
-  const [office, setOffice] = useState(user.office || "");
-  const [role, setRole] = useState(user.role || "");
-  const [gender, setGender] = useState(user.gender || "");
-
-  // Validation state
-  const [errors, setErrors] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    password: "",
-    position: "",
-    office: "",
-    role: "",
-    gender: "",
-  });
-
-  const validatePhone = () => {
-    const phoneRegex = /^\+63\d{10}$/;
-
-    if (!phoneRegex.test(phone)) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        phone: "Invalid phone number. Please enter a valid +63XXXXXXXXXXX.",
-      }));
-      return false;
-    }
-    return true;
-  };
-
-  const validateEmail = () => {
-    const emailRegex = /\S+@\S+\.\S+/;
-
-    if (!emailRegex.test(email) || !email.endsWith("@gmail.com")) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        email: "Invalid email. Please enter a valid Gmail address.",
-      }));
-      return false;
-    }
-    return true;
-  };
-
-  const validatePassword = () => {
-    if (password.length > 0 && password.length < 6) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        password: "Password must be at least 6 characters long.",
-      }));
-      return false;
-    }
-    return true;
-  };
-  const validateGender = () => {
-    if (gender === '') {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        gender: 'Gender must be selected.',
-      }));
-      return false;
-    }
-    return true;
-  };
-
-  const handleSubmit = () => {
-    // Perform basic validation
-    if (
-      !validatePhone() ||
-      !validateEmail() ||
-      !validatePassword() || 
-      !validateGender()
-    ) {
-      return;
-    }
-
-    const updatedUser = {
-      id: user.id,
-      fullName,
-      email,
-      phone,
-      password,
-      position,
-      office,
-      role,
-      gender,
-    };
-
-    // Pass the updated user object to the handleEdit function in the parent component
-    handleEdit(updatedUser);
-
-    // Close the modal
-    onHide();
-  };
-
-  return (
-    <Modal show={show} onHide={onHide}>
-      <Modal.Header closeButton>
-        <Modal.Title>Edit User</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Form>
-          <Form.Group controlId="formFullName">
-            <Form.Label>Full Name</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter Full Name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-            />
-          </Form.Group>
-
-          <Form.Group controlId="formPhone">
-            <Form.Label>Phone Number</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="+630000000000"
-              value={phone}
-              onChange={(e) => {
-                setPhone(e.target.value);
-                setErrors((prevErrors) => ({ ...prevErrors, phone: "" }));
-              }}
-            />
-            {errors.phone && (
-              <Form.Text className="text-danger">{errors.phone}</Form.Text>
-            )}
-          </Form.Group>
-
-          <Form.Group controlId="formEmail">
-            <Form.Label>Email</Form.Label>
-            <Form.Control
-              type="email"
-              placeholder="Enter Email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setErrors((prevErrors) => ({ ...prevErrors, email: "" }));
-              }}
-            />
-            {errors.email && (
-              <Form.Text className="text-danger">{errors.email}</Form.Text>
-            )}
-          </Form.Group>
-          <Form.Group controlId="formPassword">
-            <Form.Label>Password</Form.Label>
-            <Form.Control
-              type="password"
-              placeholder="Enter Password (Leave blank to keep unchanged)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group controlId="formPosition">
-            <Form.Label>Position</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter Position"
-              value={position}
-              onChange={(e) => setPosition(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group controlId="formOffice">
-            <Form.Label>Office</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter Office"
-              value={office}
-              onChange={(e) => setOffice(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group controlId="formRole">
-            <Form.Label>Role</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter Role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group controlId="formGender">
-            <Form.Label>Gender</Form.Label>
-            <Form.Select
-              value={gender}
-              onChange={(e) => {
-                setGender(e.target.value);
-                setErrors((prevErrors) => ({ ...prevErrors, gender: "" }));
-              }}
-            >
-              <option value="">Select Gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-            </Form.Select>
-            {errors.gender && (
-              <Form.Text className="text-danger">{errors.gender}</Form.Text>
-            )}
-          </Form.Group>
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
-          Cancel
-        </Button>
-        <Button variant="primary" onClick={handleSubmit}>
-          Save Changes
-        </Button>
-      </Modal.Footer>
-    </Modal>
-  );
-}
-
-// Function to handle editing user information
-const handleEdit = async (updatedUser) => {
-  try {
-    // Update user information in the database
-    const userDoc = doc(db, "users", updatedUser.id);
-    await setDoc(userDoc, updatedUser);
-
-    toast.success("User information updated successfully!");
-  } catch (error) {
-    toast.error("Error updating user information.");
-    console.error(error);
-  }
-};
-
 function DropdownAction({ message }) {
   const [deleteModal, setDeleteModal] = useState(false);
-  const [editModal, setEditModal] = useState(false);
 
   const handleDelete = async () => {
     try {
-      const response = await fetch("http://localhost:5137/deleteUser", {
-        //http://localhost:5137/deleteUser , https://lgudms.web.app/deleteUser
+      const response = await fetch("http://localhost:5137/deleteUser", { //http://localhost:5137/deleteUser , https://lgudms.web.app/deleteUser
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ uid: message.id }), // Use message.id instead of message.uid
       });
-
+  
       const result = await response.json();
-
+  
       if (result.success) {
         toast.success(result.message);
         // Close the modal after successful deletion
@@ -303,12 +72,10 @@ function DropdownAction({ message }) {
       console.error(result); // Log the error response for debugging
     }
   };
+  
 
   const openModal = () => setDeleteModal(true);
   const closeModal = () => setDeleteModal(false);
-
-  const openEditModal = () => setEditModal(true);
-  const closeEditModal = () => setEditModal(false);
 
   return (
     <div>
@@ -321,9 +88,6 @@ function DropdownAction({ message }) {
           <Dropdown.Item onClick={openModal}>
             Delete <FaTrash />
           </Dropdown.Item>
-          <Dropdown.Item onClick={openEditModal}>
-            Edit <FaEdit />
-          </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
 
@@ -332,12 +96,6 @@ function DropdownAction({ message }) {
         showModal={deleteModal}
         handleClose={closeModal}
         handleDelete={handleDelete}
-      />
-      <EditModal
-        show={editModal}
-        onHide={closeEditModal}
-        user={message}
-        handleEdit={handleEdit}
       />
     </div>
   );

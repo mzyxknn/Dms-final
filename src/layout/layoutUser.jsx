@@ -2,13 +2,12 @@ import UserSidebar from "../components/userSidebar";
 import { FaBaby, FaBars, FaUserCircle } from "react-icons/fa";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import Dropdown from "react-bootstrap/Dropdown";
-import { signOut } from "firebase/auth";
 import { auth, db, storage } from "../../firebase";
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import Form from "react-bootstrap/Form";
-
+import { signOut, updateEmail  } from "firebase/auth";
 import Button from "react-bootstrap/Button";
 import Offcanvas from "react-bootstrap/Offcanvas";
 
@@ -71,11 +70,27 @@ const LayoutUser = ({ children }) => {
           gender: gender,
           position: position,
           address: address,
+          email: email,
           phone: phone,
           profile: profileLink || (user && user.profile) || null,
           //profile: profileLink ? profileLink : user.profile,
         };
+
+        setShowUserModal(false);
+
+        
         const userDoc = doc(db, "users", props.user.id);
+
+        if (email !== props.user.email) {
+          try {
+            await updateEmail(auth.currentUser, email);
+          } catch (error) {
+            console.error("Error updating email:", error.message);
+            toast.error("Failed to update email");
+            return; // Stop the function if email update fails
+          }
+        }
+
         setDoc(userDoc, data, { merge: true }).then((res) => {
           toast.success("Successfully Updated");
           props.onHide();
@@ -169,6 +184,7 @@ const LayoutUser = ({ children }) => {
                 value={email}
                 type="text"
                 className="form-control bg-secondary"
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div
@@ -365,9 +381,6 @@ const LayoutUser = ({ children }) => {
                 {" "}
                 {user.fullName} - <b className="text-white">User</b>
               </p >
-            )}{" "}
-            {user && getOffice && (
-              <p className="mb-0 text-white">{getOffice(user.office).officeName}</p>
             )}
             <Dropdown>
               <Dropdown.Toggle id="dropdown-basic"></Dropdown.Toggle>

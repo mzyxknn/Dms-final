@@ -2,13 +2,13 @@ import Sidebar from "../components/sidebar";
 import { FaBaby, FaBars, FaUserCircle } from "react-icons/fa";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import Dropdown from "react-bootstrap/Dropdown";
-import { signOut } from "firebase/auth";
+import { signOut, updateEmail  } from "firebase/auth";
 import { auth, db, storage } from "../../firebase";
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import Form from "react-bootstrap/Form";
-
+import { Link } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Offcanvas from "react-bootstrap/Offcanvas";
 
@@ -73,10 +73,26 @@ const Layout = ({ children }) => {
           position: position,
           address: address,
           phone: phone,
+          email: email, 
           profile: profile || (user && user.profile) || null,
           // profile: profile ? profileLink : user.profile,
         };
+
+        
+      
+        setShowUserModal(false);
+
         const userDoc = doc(db, "users", props.user.id);
+        if (email !== props.user.email) {
+          try {
+            await updateEmail(auth.currentUser, email);
+          } catch (error) {
+            console.error("Error updating email:", error.message);
+            toast.error("Failed to update email");
+            return; // Stop the function if email update fails
+          }
+        }
+
         setDoc(userDoc, data, { merge: true }).then((res) => {
           toast.success("Successfully Updated");
           props.onHide();
@@ -168,7 +184,8 @@ const Layout = ({ children }) => {
               <label htmlFor="">Email</label>
               <input
                 value={email}
-                type="text"
+                type="email"
+                onChange={(e) => setEmail(e.target.value)}
                 className="form-control bg-secondary"
               />
             </div>
@@ -270,7 +287,7 @@ const Layout = ({ children }) => {
             </div>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={() => setEditProfile(true)}>Edit Profile</Button>
+              <Button onClick={() => setEditProfile(true)}>Edit Profile</Button>
           </Modal.Footer>
         </Modal>
       </>
@@ -364,11 +381,8 @@ const Layout = ({ children }) => {
             {user && (
               <p className="mb-0 mx-2 text-white">
                 {" "}
-                {user.fullName} - <b className="text-white">Administrator</b>
+                {user.fullName} - <b>Administrator</b>
               </p>
-            )}{" "}
-            {user && getOffice && (
-              <p className="mb-0 text-white">{getOffice(user.office).officeName}</p>
             )}
             <Dropdown>
               <Dropdown.Toggle id="dropdown-basic"></Dropdown.Toggle>

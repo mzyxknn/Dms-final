@@ -7,7 +7,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 // Initialize Firebase Admin SDK
-const serviceAccount = require("C:/Users/MC BEN/Documents/GitHub/DMS-PROJECT/src/serverless/lgudms-firebase-adminsdk-y0ge8-e67096178e.json");
+const serviceAccount = require("C:/Users/Roz Vasquez/Documents/DMS/Dms-final/src/serverless/lgudms-firebase-adminsdk-y0ge8-e67096178e.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),

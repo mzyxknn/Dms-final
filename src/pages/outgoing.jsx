@@ -219,8 +219,7 @@ const Outgoing = () => {
         subClassification &&
         action &&
         deliverType &&
-        attachmentDetail &&
-        file
+        attachmentDetail
       ) {
         return true;
       } else {

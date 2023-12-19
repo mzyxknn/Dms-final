@@ -219,7 +219,8 @@ const UserOutgoing = () => {
         subClassification &&
         action &&
         deliverType &&
-        attachmentDetail
+        attachmentDetail &&
+        file
       ) {
         return true;
       } else {
@@ -551,7 +552,7 @@ const UserOutgoing = () => {
                       className="mb-3"
                     >
                       <option key={0} value={0}>
-                        Please select a receiever
+                        Please select a receiver
                       </option>
                       {/* <option key={0} value={0}>
                       Please select a receiever

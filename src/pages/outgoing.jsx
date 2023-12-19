@@ -219,7 +219,8 @@ const Outgoing = () => {
         subClassification &&
         action &&
         deliverType &&
-        attachmentDetail
+        attachmentDetail &&
+        file
       ) {
         return true;
       } else {
@@ -557,7 +558,7 @@ const Outgoing = () => {
                     className="mb-3"
                   >
                     <option key={0} value={0}>
-                      Please select a receiever
+                      Please select a receiver
                     </option>
                     <option
                       className="bg-primary text-white"

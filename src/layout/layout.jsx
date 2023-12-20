@@ -73,7 +73,6 @@ const Layout = ({ children }) => {
           position: position,
           address: address,
           phone: phone,
-          email: email, 
           profile: profile || (user && user.profile) || null,
           // profile: profile ? profileLink : user.profile,
         };
@@ -83,15 +82,6 @@ const Layout = ({ children }) => {
         setShowUserModal(false);
 
         const userDoc = doc(db, "users", props.user.id);
-        if (email !== props.user.email) {
-          try {
-            await updateEmail(auth.currentUser, email);
-          } catch (error) {
-            console.error("Error updating email:", error.message);
-            toast.error("Failed to update email");
-            return; // Stop the function if email update fails
-          }
-        }
 
         setDoc(userDoc, data, { merge: true }).then((res) => {
           toast.success("Successfully Updated");
@@ -185,7 +175,6 @@ const Layout = ({ children }) => {
               <input
                 value={email}
                 type="email"
-                onChange={(e) => setEmail(e.target.value)}
                 className="form-control bg-secondary"
               />
             </div>

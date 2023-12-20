@@ -34,6 +34,7 @@ import Placeholder from "react-bootstrap/Placeholder";
 import PlaceHolder from "../components/placeholder";
 import moment from "moment";
 import Routing from "../components/routing";
+import { useNavigate } from "react-router";
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -56,6 +57,19 @@ const Dashboard = () => {
 
   const messagesCollectionRef = collection(db, "messages");
   const userCollectionRef = collection(db, "users");
+
+  const navigation = useNavigate();
+  const handleOffice = () => {
+    navigation("/office-management");
+  };
+
+  const handleUser = () => {
+    navigation("/create-user");
+  };
+
+  const handleFiles = () => {
+    navigation("/files");
+  };
 
   function UrgentModal(props) {
     const urgentFiles = props.urgentFiles;
@@ -387,14 +401,17 @@ const Dashboard = () => {
           <div className="row">
             <div className="col-lg-12 my-3 my-lg-0">
               <div className="stats flex">
-                <div className="wrapper flex mx-3">
+                <div
+                  className="wrapper flex mx-3"
+                  onClick={() => handleOffice()}
+                >
                   <img src="./assets/images/ri_home-office-line.png" alt="" />
                   <div className="wrapper flex flex-column">
                     <p className="mb-0">Offices</p>
                     {offices && <Badge bg="primary">{offices.length}</Badge>}
                   </div>
                 </div>
-                <div className="wrapper flex mx-3">
+                <div className="wrapper flex mx-3" onClick={() => handleUser()}>
                   <img
                     src="./assets/images/heroicons_users-20-solid.png"
                     alt=""
@@ -404,7 +421,7 @@ const Dashboard = () => {
                     <Badge bg="primary">{users.length}</Badge>
                   </div>
                 </div>
-                <div className="wrapper flex mx-3">
+                <div className="wrapper flex mx-3" onClick={() => handleFiles()}>
                   <img src="./assets/images/solar_documents-bold.png" alt="" />
                   <div className="wrapper flex flex-column">
                     <p className="mb-0">Documents</p>
@@ -429,10 +446,7 @@ const Dashboard = () => {
 
           <div className="row">
             <div className="col-lg-6  my-2 my-lg-0">
-              <ListGroup
-                horizontal
-                className="d-flex align-items-center" 
-              >
+              <ListGroup horizontal className="d-flex align-items-center">
                 <ListGroup.Item
                   className={`${filter == "all" ? "bg-secondary" : ""}`}
                   onClick={() => setFilter("all")}

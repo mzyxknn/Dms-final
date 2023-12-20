@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import Layout from "../layout/layout";
-import { Button, Dropdown, Modal, Table, Form, FormGroup } from "react-bootstrap";
+import {
+  Button,
+  Dropdown,
+  Modal,
+  Table,
+  Form,
+  FormGroup,
+} from "react-bootstrap";
 import {
   FaDownload,
   FaEdit,
@@ -25,7 +32,7 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   signInWithEmailAndPassword,
-  sendEmailVerification
+  sendEmailVerification,
 } from "firebase/auth";
 
 function DeleteModal({ showModal, handleClose, handleDelete }) {
@@ -49,23 +56,25 @@ function DeleteModal({ showModal, handleClose, handleDelete }) {
 const handleEdit = async (updatedUser) => {
   try {
     const userDoc = doc(db, "users", updatedUser.id);
-    await setDoc(userDoc, updatedUser);
-
     toast.success("User information updated successfully!");
+
+    await setDoc(userDoc, updatedUser);
   } catch (error) {
     toast.error("Error updating user information.");
     console.error(error);
   }
 };
 
-function EditModal({ show, onHide, user}) {
+function EditModal({ show, onHide, user }) {
+  const officeCollection = collection(db, "offices");
+
   const [fullName, setFullName] = useState(user.fullName || "");
   const [phone, setPhone] = useState(user.phone || "");
   const [position, setPosition] = useState(user.position || "");
-  const [office, setOffice] = useState(user.office || "");
+  const [selectedOffice, setSelectedOffice] = useState(user.office || "");
   const [role, setRole] = useState(user.role || "");
   const [gender, setGender] = useState(user.gender || "");
-
+  const [offices, setOffices] = useState([]); // State to store offices
 
   // Validation state
   const [errors, setErrors] = useState({
@@ -77,8 +86,41 @@ function EditModal({ show, onHide, user}) {
     gender: "",
   });
 
+  const fetchOffice = () => {
+    onSnapshot(officeCollection, (snapshot) => {
+      const output = [];
+      snapshot.docs.forEach((doc) => {
+        const office = { ...doc.data(), id: doc.id };
+        if (office.status == "Active") {
+          output.push(office);
+        }
+      });
+      setOffices(output);
+    });
+  };
+
+  // Reset state when the modal is closed
+  useEffect(() => {
+    if (!show) {
+      setFullName(user.fullName || '');
+      setPhone(user.phone || '');
+      setPosition(user.position || '');
+      setSelectedOffice(user.office || '');
+      setRole(user.role || '');
+      setGender(user.gender || '');
+      setErrors({
+        fullName: '',
+        phone: '',
+        position: '',
+        office: '',
+        role: '',
+        gender: '',
+      });
+    }
+  }, [show, user]);
+
   const validatePhone = () => {
-    const phoneRegex = /^\+63\d{10}$/;
+    const phoneRegex = /^\d{11}$/;
 
     if (!phoneRegex.test(phone)) {
       setErrors((prevErrors) => ({
@@ -91,7 +133,7 @@ function EditModal({ show, onHide, user}) {
   };
 
   const validateGender = () => {
-    if (gender === "") {
+    if (gender === "" || gender === "Select Gender") {
       setErrors((prevErrors) => ({
         ...prevErrors,
         gender: "Gender must be selected.",
@@ -100,17 +142,43 @@ function EditModal({ show, onHide, user}) {
     }
     return true;
   };
+  
+  const validateFullName = () => {
+    if (fullName === "") {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        fullName: "Full name must not be empty.",
+      }));
+      return false;
+    }
+    return true;
+  };
+  const validatePos = () => {
+    if (position === "") {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        position: "Position must not be empty.",
+      }));
+      return false;
+    }
+    return true;
+  };
+  const validateRole = () => {
+    if (role === "") {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        role: "Role must not be empty.",
+      }));
+      return false;
+    }
+    return true;
+  };
 
   const handleSubmit = async () => {
     // Perform basic validation
-    if (
-      !validatePhone() ||
-      !validateGender()
-    ) {
+    if (!validatePhone() || !validateGender() || !validateRole() || !validateFullName() || !validatePos()) {
       return;
     }
-
-    // If a new password is provided, perform reauthentication
 
     const updatedUser = {
       id: user.id,
@@ -118,7 +186,7 @@ function EditModal({ show, onHide, user}) {
       email: user.email,
       phone,
       position,
-      office,
+      office: selectedOffice, // Fix: Use selectedOffice instead of office
       role,
       gender,
     };
@@ -151,7 +219,7 @@ function EditModal({ show, onHide, user}) {
             <Form.Label>Phone Number</Form.Label>
             <Form.Control
               type="text"
-              placeholder="+630000000000"
+              placeholder="Mobile Number"
               value={phone}
               onChange={(e) => {
                 setPhone(e.target.value);
@@ -173,12 +241,17 @@ function EditModal({ show, onHide, user}) {
           </Form.Group>
           <Form.Group controlId="formOffice">
             <Form.Label>Office</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter Office"
-              value={office}
-              onChange={(e) => setOffice(e.target.value)}
-            />
+            <Form.Select
+              value={selectedOffice}
+              onChange={(e) => setSelectedOffice(e.target.value)}
+            >
+              <option value="">Select Office</option>
+              {offices.map((office) => (
+                <option key={office.id} value={office.id}>
+                  {office.officeName}
+                </option>
+              ))}
+            </Form.Select>
           </Form.Group>
           <Form.Group controlId="formRole">
             <Form.Label>Role</Form.Label>
@@ -233,13 +306,13 @@ function DropdownAction({ message }) {
         },
         body: JSON.stringify({ uid: message.id }),
       });
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-  
+
       const result = await response.json();
-  
+
       if (result.success) {
         toast.success(result.message);
         // Close the modal after successful deletion
@@ -268,16 +341,15 @@ function DropdownAction({ message }) {
         </Dropdown.Toggle>
 
         <Dropdown.Menu>
-          <Dropdown.Item onClick={openModal}>
-            Delete <FaTrash />
-          </Dropdown.Item>
           <Dropdown.Item onClick={openEditModal}>
             Edit <FaEdit />
+          </Dropdown.Item>
+          <Dropdown.Item onClick={openModal}>
+            Delete <FaTrash />
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
 
-      
       <EditModal
         show={editModal}
         onHide={closeEditModal}
@@ -289,7 +361,6 @@ function DropdownAction({ message }) {
         handleClose={closeModal}
         handleDelete={handleDelete}
       />
-      
     </div>
   );
 }
@@ -324,7 +395,7 @@ const CreateUser = () => {
           office: office,
           role: "user",
         };
-        setOfficeModal(false)
+        setOfficeModal(false);
         const result = await createUserWithEmailAndPassword(
           auth,
           email,
@@ -332,7 +403,9 @@ const CreateUser = () => {
         );
         if (result) {
           const userDoc = doc(db, "users", result.user.uid);
-          setDoc(userDoc, data).then(() => {
+          await setDoc(userDoc, data);
+          setDoc(userDoc, data).then(async () => {
+            await sendEmailVerification(result.user);
             toast.success("Successfully Created User!");
           });
         }
@@ -509,11 +582,11 @@ const CreateUser = () => {
             </tr>
           </thead>
           <tbody>
-            {users.map((message) => {
+            {users.map((message, index) => {
               return (
-                <tr key={message.id}>
+                <tr key={index + 1}>
                   <td>
-                    <div>{message.id}</div>
+                    <div>{index + 1}</div>
                   </td>
                   <td>{message.fullName}</td>
 
